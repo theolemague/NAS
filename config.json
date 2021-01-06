@@ -1,0 +1,50 @@
+{
+    "routers" : [
+        {
+            "port": "5000",
+            "mpls": {
+                "min_label" : "20",
+                "max_label": "2000",
+                "interval" : "2",
+                "holdtime" : "10",
+                "maxhops" : "10",
+                "neighbor":[ "3.3.3.3", "2.2.2.2"]
+            },
+            "ospf" :{
+                "id": "1",
+                "networks": [
+                    {
+                        "address" : "192.168.200.0",
+                        "mask" : "255.255.255.0",
+                        "area" : "0"
+                    },
+                    {
+                        "address" : "192.168.103.0",
+                        "mask" : "255.255.255.0",
+                        "area" : "0"
+                    }
+                ]
+            }
+            ,
+            "interfaces" : [
+                {
+                    "name" : "Loopback0",
+                    "address" : "1.1.1.1",
+                    "mask" : "255.255.255.255"
+                },
+                {
+                    "name" : "FastEthernet0/0",
+                    "address" : "192.168.1.1",
+                    "mask" : "255.255.255.0",
+                    "mpls" : true
+                },
+                {
+                    "name" : "FastEthernet0/1",
+                    "address" : "192.168.2.1",
+                    "mask" : "255.255.255.0",
+                    "mpls" : true
+                }
+            ]
+        }
+    ]
+}
