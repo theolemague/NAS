@@ -33,15 +33,15 @@
                     "mask" : "255.255.255.255"
                 },
                 {
-                    "name" : "FastEthernet0/0",
-                    "address" : "192.168.1.1",
-                    "mask" : "255.255.255.0",
+                    "name" : "FastEthernet 0/0",
+                    "address" : "10.0.0.123",
+                    "mask" : "255.123.0.0",
                     "mpls" : true
                 },
                 {
-                    "name" : "FastEthernet0/1",
-                    "address" : "192.168.2.1",
-                    "mask" : "255.255.255.0",
+                    "name" : "GigabitEthernet 1/0",
+                    "address" : "131.108.78.235",
+                    "mask" : "255.255.255.252",
                     "mpls" : true
                 }
             ]
