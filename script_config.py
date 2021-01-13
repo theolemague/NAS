@@ -14,10 +14,15 @@ def clean_router(port,router):
         tn.write(b"no mpls mtu\r")
         tn.write(b"exit\r")
     
-    tn.write(bytes("no router ospf "+router["ospf"]["id"]+"\r",'utf-8'))
+    if "ospf" in router:
+        tn.write(bytes("no router ospf "+router["ospf"]["id"]+"\r",'utf-8'))
+   
     tn.write(b"no mpls ldp router-id Loopback0\r")
     tn.write(b"no mpls label range\r")
-    
+   
+    if "bgp" in router :
+        tn.write(bytes("no router bgp "+router["bgp"]["as"]+"\r",'utf-8'))
+
     tn.write(b"end\r")
     tn.write(b"write\r")
     tn.write(b"reload\r\r")
@@ -63,12 +68,33 @@ def inverse_Mask(inter):
         invert="0.0.0."+str(test)
     return(invert)
 
+def set_neighbor_address(hostname, networks, tn):
+    global routers
+    for router in routers :
+        if router["name"] == hostname :
+            for inter in router["interfaces"]:
+                if find_newtwork(inter) in networks :
+                    tn.write(bytes("neighbor "+inter["address"]+" remote-as "+router["bgp"]["as"]+"\r",'utf-8'))
 
+def set_neighbor_loopback_address(hostname, tn):
+    global routers
+    for router in routers :
+        if router["name"] == hostname :
+            for inter in router["interfaces"]:
+                if inter["name"] == "Loopback0":
+                    tn.write(bytes("neighbor "+inter["address"]+" remote-as "+router["bgp"]["as"]+"\r",'utf-8'))
+                    tn.write(bytes("neighbor "+inter["address"]+" update-source loopback 0\r",'utf-8'))
 
-
+def set_neighbor_loopback_address(hostname, tn):
+    global routers
+    for router in routers :
+        if router["name"] == hostname :
+            for inter in router["interfaces"]:
+                if inter["name"] == "Loopback0":
+                    tn.write(bytes("neighbor "+inter["address"]+" remote-as "+router["bgp"]["as"]+"\r",'utf-8'))
+                    tn.write(bytes("neighbor "+inter["address"]+" update-source loopback 0\r",'utf-8'))
 
 def config_router(port, router):
-
     tn = telnetlib.Telnet("localhost", port)
     tn.write(b'\ren\r')
 
@@ -87,7 +113,7 @@ def config_router(port, router):
     
     #(conf) OSPF
     if "ospf" in router:
-        ospf = router["ospf"]
+        ospf = router["ospf"]       
         tn.write(bytes("router ospf "+ospf["id"]+"\r",'utf-8'))
         # for network in ospf["networks"]:
         for inter in router["interfaces"]:
@@ -95,6 +121,20 @@ def config_router(port, router):
                 addr = find_newtwork(inter)
                 r_mask = inverse_Mask(inter)
                 tn.write(bytes("network "+addr+" "+r_mask+" area "+ospf["area"]+"\r",'utf-8'))
+            elif "ibgp" :
+                tn.write(bytes("network "+inter["address"]+" 0.0.0.0 area "+ospf["area"]+"\r",'utf-8'))
+        
+        if "vrf" in ospf:
+            for key in ospf["vrf"].keys():
+                # Error de key ici car il considere interface mais il ne faut pas 
+                tn.write(bytes("router ospf "+ospf["vrf"][key]+" vrf "+key+"\r",'utf-8'))
+                tn.write(bytes("redistribute bgp "+router["bgp"]["as"]+" subnets\r",'utf-8'))
+                for inter in router["interfaces"]:
+                    if inter["name"] == ospf["vrf"]["interface"]:
+                        tn.write(bytes("network "+inter["address"]+" 0.0.0.0 area "+ospf["area"]+"\r",'utf-8'))
+        
+        tn.write(b"exit\r")
+
 
     # (conf) MPLS
     if "mpls" in router:
@@ -104,14 +144,46 @@ def config_router(port, router):
         if "min_label" in mpls:
             tn.write(bytes("mpls label range "+mpls["min_label"]+" "+mpls["max_label"]+"\r",'utf-8'))
 
-    
+    # (conf) BGP
+    if "bgp" in router:
+        bgp = router["bgp"]
+        tn.write(bytes("router bgp "+bgp["as"]+"\r",'utf-8'))
+        if "neighbor" in bgp:
+            networks = []
+            for inter in router["interfaces"]:
+                networks.append(find_newtwork(inter))
+            for neighbor in bgp["neighbor"]:
+                set_neighbor_address(neighbor, networks, tn)
+        # (conf) iBGP
+        if "ibgp" in router:
+            neighbors = router["ibgp"]
+            for n in neighbors:
+                set_neighbor_loopback_address(n, tn)
+        tn.write(b"exit\r")
+
+    if "vrf" in router:
+        for key in router["vrf"].keys():
+            tn.write(bytes("ip vrf "+key+"\r",'utf-8'))
+            tn.write(bytes("rd "+router["bgp"]["as"]+":100\r",'utf-8'))
+            tn.write(bytes("route-target export "+router["bgp"]["as"]+":100\r",'utf-8'))
+            tn.write(bytes("route-target import "+router["bgp"]["as"]+":100\r",'utf-8'))
+            tn.write(b"exit\r")
+            for inter in router["interfaces"]:
+                if inter["name"] == router["vrf"][key] :
+                    tn.write(bytes("interface "+inter["name"]+"\r",'utf-8'))
+                    tn.write(bytes("ip vrf forwarding "+key+"\r",'utf-8'))            
+                    tn.write(b"exit\r")
+
+
+
+
+
     tn.write(b"end\r")
     tn.write(b'write\r')
     print("Done for", router["name"])
 
 
 def config_vpc(port, vpc):
-
     tn = telnetlib.Telnet("localhost", port)
     tn.write(bytes("ip "+vpc["address"]+"/"+vpc["mask"]+" "+vpc["gateway"]+"\r",'utf-8'))
     print("Done for", vpc["name"])
