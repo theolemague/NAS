@@ -9,7 +9,7 @@ def find_newtwork(inter):
             addr=str(int(x[0])&int(y[0]))+".0.0.0"
             print(addr)
         elif cont < 17:
-            addr=y[0]+str(int(x[1])&int(y[1]))+".0.0"
+            addr=y[0]+"."+str(int(x[1])&int(y[1]))+".0.0"
             print(addr)
         elif cont<25:
             addr=y[0]+"."+y[1]+"."+str(int(x[2])&int(y[2]))+".0"
