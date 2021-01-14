@@ -15,9 +15,10 @@ def config_router(port, router):
         tn.write(bytes("interface "+inter["name"]+"\r\n",'utf-8'))
         tn.write(bytes("ip address "+inter["address"]+" "+inter["mask"]+"\r\n", "utf-8"))
         tn.write(b"no shutdown\r\n")
-        tn.write(b"exit\r\n")
+        tn.write(b"end\r\n")
     tn.write(b'do write\r\n')
     print(tn.read_very_eager().decode("ascii"))
+    
 
 
 if __name__ == "__main__":
