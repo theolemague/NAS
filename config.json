@@ -9,23 +9,30 @@
                 "mtu": "1560"
             },
             "ospf" :{
-                "id": "1",
-                "vrf": {
-                    "IT":"2",
-                    "interface" : "GigabitEthernet2/0"
-                },
+                "id": "100",
                 "area" : "0"
             },
             "bgp":{
                 "as":"1",
-                "neighbor" : [ "IT1", "TC1"]
+                "neighbor" : [ "IT1", "TC1"],
+                "ibgp":["PE2"]
             },
-            "ibgp":["PE2", "P2"]
+            "vrf":[
+               {
+                    "id" : "TC",
+                    "interface":"FastEthernet0/0",
+                    "rd":"1",
+                    "ospf" : "101"
+
+               } ,
+               {
+                    "id" : "IT",
+                    "interface":"GigabitEthernet2/0",
+                    "rd":"2"
+
+               } 
+            ]
             ,
-            "vrf":{
-                "TC":"FastEthernet0/0",
-                "IT":"GigabitEthernet2/0"
-            },
             "interfaces" : [
                 {
                     "name" : "Loopback0",
@@ -52,7 +59,6 @@
                 }
             ]
         },
- 
         {
             "port": "5002",
             "name": "PE2",
@@ -62,23 +68,31 @@
                 "mtu": "1560"
             },
             "ospf" :{
-                "id": "1",
-                "vrf": {
-                    "IT":"2",
-                    "interface" : "GigabitEthernet2/0"
-                },
+                "id": "300",
                 "area" : "0"
             },
             "bgp":{
                 "as":"1",
                 "neighbor" : [ "IT2", "TC2"]
             },
-            "ibgp":["PE1","P2"]
+            "ibgp":["PE1"]
             ,
-            "vrf":{
-                "TC":"FastEthernet0/0",
-                "IT":"GigabitEthernet2/0"
-            },
+            
+            "vrf":[
+                {
+                        "id" : "TC",
+                        "interface":"FastEthernet0/0",
+                        "rd":"1",
+                        "ospf" : "201"
+    
+                } ,
+                {
+                        "id" : "IT",
+                        "interface":"GigabitEthernet2/0",
+                        "rd":"2"
+    
+                } 
+            ],
             "interfaces" : [
                 {
                     "name" : "Loopback0",
@@ -112,13 +126,12 @@
                 "mtu": "1560"
             },
             "ospf" :{
-                "id": "1",
+                "id": "200",
                 "area" : "0"
             },
             "bgp" :{
-                "as": "1"
-            },
-            "ibgp":["PE1", "PE2"]
+                "as":"1"
+            }
             ,
             "interfaces" : [
                 {
@@ -174,7 +187,7 @@
                 "area" : "0"
             },
             "bgp":{
-                "as":"2",
+                "as":"3",
                 "neighbor" : [ "PE2"]
             },
             "interfaces" : [
@@ -200,7 +213,7 @@
                 "area" : "0"
             },
             "bgp":{
-                "as":"3",
+                "as":"2",
                 "neighbor" : [ "PE1"]
             },
             "interfaces" : [
