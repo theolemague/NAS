@@ -57,12 +57,12 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
     liste_dico=[]
     for i in liste_complete:
         dic_inter={
-            "port":str(port),
+            "port":str(port)+'\n',
             "name":i,
             "mpls":{
-                "mtu":1560,
-                "min_label":min_label,
-                "max_label":max_label
+                "mtu":"1560"+'\n',
+                "min_label":str(min_label)+'\n',
+                "max_label":str(max_label)+'\n'
             },
             "ospf":{
                 "id":str(ospf),
@@ -77,25 +77,10 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
             ]
             
         }
-        if i[:2] == "PE":
-            #print(list_PE)
-            copy_list=deepcopy(list_PE)
-            #print(copy_list)
-            copy_list.remove(i)
-            #print(copy_list)
-            dic_inter["bgp"]={
-                "as":as_nb,
-                "ibgp":copy_list
-            }
-            #dic_inter["ibgp"]=copy_list
-        port+=1
-        ospf+=100
-        min_label+=100
-        max_label+=100
-        network_loopback+=1
 
         for j in liste_tuple:
             if j[0] == i: 
+
                 if(len(dic_inter["interface"])==1):
                     dic_inter["interface"].append({
                         "name" : "GigabitEthernet1/0",
@@ -139,6 +124,35 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
                         "mask" : "255.255.255.252",
                         "mpls" : True
                     })
+
+        if i[:2] == "PE":
+            #print(list_PE)
+            copy_list=deepcopy(list_PE)
+            #print(copy_list)
+            copy_list.remove(i)
+            #print(copy_list)
+            dic_inter["bgp"]={
+                "as":as_nb,
+                "ibgp":copy_list
+            }
+            dic_inter["interface"].append({
+                "name" : "GigabitEthernet2/0",
+                "address" : "194.10.2"+i[-1]+".0",
+                "mask" : "255.255.255.252",
+                "mpls" : False
+            })
+            dic_inter["interface"].append({
+                "name" : "FastEthernet0/0",
+                "address" : "194.20.2"+i[-1]+".0",
+                "mask" : "255.255.255.252",
+                "mpls" : False
+            })
+            #dic_inter["ibgp"]=copy_list
+        port+=1
+        ospf+=100
+        min_label+=100
+        max_label+=100
+        network_loopback+=1
      
         liste_dico.append(dic_inter)
 
