@@ -44,18 +44,9 @@ def set_neighbor_address(hostname, networks, tn):
     global routers
     for router in routers :
         if router["name"] == hostname :
-            for inter in router["interfaces"]:
+            for inter in router["interface"]:
                 if find_newtwork(inter) in networks :
                     tn.write(bytes("neighbor "+inter["address"]+" remote-as "+router["bgp"]["as"]+"\r",'utf-8'))
-
-def set_neighbor_loopback_address(hostname, tn):
-    global routers
-    for router in routers :
-        if router["name"] == hostname :
-            for inter in router["interfaces"]:
-                if inter["name"] == "Loopback0":
-                    tn.write(bytes("neighbor "+inter["address"]+" remote-as "+router["bgp"]["as"]+"\r",'utf-8'))
-                    tn.write(bytes("neighbor "+inter["address"]+" update-source loopback 0\r",'utf-8'))
 
 def clear_interface(tn):
     tn.write(b"no ip address \r")
@@ -64,7 +55,7 @@ def clear_interface(tn):
     tn.write(b"no mpls mtu\r")
 
 def config_interfaces(router, tn):
-    for inter in router["interfaces"]:
+    for inter in router["interface"]:
         tn.write(bytes("interface "+inter["name"]+"\r",'utf-8'))
         tn.write(bytes("ip address "+inter["address"]+" "+inter["mask"]+"\r", "utf-8"))
         tn.write(b"no shutdown\r")
@@ -91,12 +82,12 @@ def clear_bgp(tn):
         bgp_as = int(tn.read_until(b"\n").decode('ascii'))
         tn.write(bytes("no router bgp "+str(bgp_as)+"\r",'utf-8'))
 
-def config_bgp(router, tn):
+def config_bgp(router, routers, tn):
     bgp = router["bgp"]
     tn.write(bytes("router bgp "+bgp["as"]+"\r",'utf-8'))
     if "neighbor" in bgp:
         networks = []
-        for inter in router["interfaces"]:
+        for inter in router["interface"]:
             networks.append(find_newtwork(inter))
         for neighbor in bgp["neighbor"]:
             set_neighbor_address(neighbor, networks, tn)
@@ -104,7 +95,19 @@ def config_bgp(router, tn):
     if "ibgp" in bgp:
         neighbors = bgp["ibgp"]
         for n in neighbors:
-            set_neighbor_loopback_address(n, tn)
+            for router in routers :
+                if router["name"] == n :
+                    for inter in router["interface"]:
+                        if inter["name"] == "Loopback0":
+                            tn.write(bytes("neighbor "+inter["address"]+" remote-as "+router["bgp"]["as"]+"\r",'utf-8'))
+                            tn.write(bytes("neighbor "+inter["address"]+" update-source loopback 0\r",'utf-8'))
+        
+        # TODO Est ce qu'il faut rajouter les loopback en OSPF pour ibgp
+        # tn.write(b"exit\r")
+        # tn.write(bytes("router ospf "+router["ospf"]["id"]+"\r",'utf-8'))
+        # for inter in router["interface"]:
+        #     if inter["name"] == "Loopback0":
+        #         tn.write(bytes("network "+inter["address"]+" 0.0.0.0 area "+router["ospf"]["area"]+"\r",'utf-8'))
     tn.write(b"exit\r")
 
 def clear_ospf(tn):
@@ -117,16 +120,17 @@ def clear_ospf(tn):
             if res[i] == "Process":
                 tn.write(bytes("no router ospf "+res[i+1].split(",")[0]+"\r",'utf-8'))
 
-def config_ospf(router, tn):
+def config_ospf(router, tn): # TODO Change neighbor
     ospf = router["ospf"]
     tn.write(bytes("router ospf "+ospf["id"]+"\r",'utf-8'))
-    for inter in router["interfaces"]:
+    for inter in router["interface"]:
         if inter["name"] != "Loopback0" :
             addr = find_newtwork(inter)
             r_mask = inverse_Mask(inter)
             tn.write(bytes("network "+addr+" "+r_mask+" area "+ospf["area"]+"\r",'utf-8'))
-        elif "ibgp" in router["bgp"] :
-            tn.write(bytes("network "+inter["address"]+" 0.0.0.0 area "+ospf["area"]+"\r",'utf-8'))
+            if "PE" in router["name"] and inter["name"] != "GigabitEthernet1/0":
+                name = inter["name"].split("Ethernet")
+                tn.write(bytes("passive-interface "+name[0]+"Ethernet "+name[1]+"\r",'utf-8'))
     tn.write(b"exit\r")
 
 
@@ -147,7 +151,7 @@ def config_vrf(router, tn):
 
     for vrf in router["vrf"]:
         interface = 0
-        for inter in router["interfaces"]:
+        for inter in router["interface"]:
             if inter["name"] == vrf["interface"] :
                 interface = inter
         
@@ -173,9 +177,10 @@ def config_vrf(router, tn):
             tn.write(b"exit\r")
 
 
-def config_router(port, router):
+def config_router(port, router, routers):
 
     tn = telnetlib.Telnet("localhost", port)
+    tn.write(b'\rend\r')
     tn.write(b'\ren\r')
     
     tn.write(b'conf t\r')   
@@ -198,7 +203,7 @@ def config_router(port, router):
     # (conf) BGP
     if "bgp" in router:
         clear_bgp(tn)
-        config_bgp(router, tn)
+        config_bgp(router, routers, tn)
 
 
     # Config VRF
@@ -214,16 +219,17 @@ def config_router(port, router):
     print("Done for", router["name"])
 
 
-def update_router(port, router, old_router):
+def update_router(port, router, old_router, routers):
 
     tn = telnetlib.Telnet("localhost", port)
+    tn.write(b'\rend\r')
     tn.write(b'\ren\r')
     
     tn.write(b'conf t\r')   
     tn.write(bytes("hostname "+router["name"]+"\r",'utf-8'))
 
     # Config interface
-    if router["interfaces"] !=  old_router["interfaces"] :
+    if router["interface"] !=  old_router["interface"] :
         clear_interface(tn)
         config_interfaces(router, tn)
 
@@ -240,7 +246,7 @@ def update_router(port, router, old_router):
     # (conf) BGP
     if "bgp" in router and router["bgp"] !=  old_router["bgp"]  :
         clear_bgp(tn)
-        config_bgp(router, tn)
+        config_bgp(router, routers, tn)
 
     # Config VRF
     if "vrf" in router and router["vrf"] !=  old_router["vrf"]  :
@@ -272,7 +278,7 @@ if __name__ == "__main__":
     
     routers = config["routers"]
     for r in routers :
-        config_router(r["port"], r)
+        config_router(r["port"], r, routers)
     
     while True :
         command =input("Entrez une commande\n")
@@ -284,6 +290,7 @@ if __name__ == "__main__":
             for r in routers :
                 for ur in updated_routers :
                     if ur["name"] == r["name"] and ur != r :
-                        config_router(r["port"], r)
+                        update_router(ur["port"],ur, r, updated_routers)
+            routers = updated_routers
         if command == "end" :
             break

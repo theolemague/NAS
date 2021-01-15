@@ -132,18 +132,18 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
             copy_list.remove(i)
             #print(copy_list)
             dic_inter["bgp"]={
-                "as":as_nb,
+                "as":str(as_nb),
                 "ibgp":copy_list
             }
             dic_inter["interface"].append({
                 "name" : "GigabitEthernet2/0",
-                "address" : "194.10.2"+i[-1]+".0",
+                "address" : "194.10.2"+i[-1]+".1",
                 "mask" : "255.255.255.252",
                 "mpls" : False
             })
             dic_inter["interface"].append({
                 "name" : "FastEthernet0/0",
-                "address" : "194.20.2"+i[-1]+".0",
+                "address" : "194.20.2"+i[-1]+".1",
                 "mask" : "255.255.255.252",
                 "mpls" : False
             })
@@ -159,13 +159,9 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
     dico["routers"]=liste_dico
     return dico
 
-        
-
-
 if __name__ == "__main__":
     l1,l2,l3 = get_values()
     my_dico = get_dictionnary(l1,l2,l3)
 
     with open("config.json","w") as f:
-        json.dump(my_dico,f)
-
+        json.dump(my_dico,f,indent=2)
