@@ -57,16 +57,6 @@ def set_neighbor_loopback_address(hostname, tn):
                     tn.write(bytes("neighbor "+inter["address"]+" remote-as "+router["bgp"]["as"]+"\r",'utf-8'))
                     tn.write(bytes("neighbor "+inter["address"]+" update-source loopback 0\r",'utf-8'))
 
-def set_neighbor_loopback_address(hostname, tn):
-    global routers
-    for router in routers :
-        if router["name"] == hostname :
-            for inter in router["interfaces"]:
-                if inter["name"] == "Loopback0":
-                    tn.write(bytes("neighbor "+inter["address"]+" remote-as "+router["bgp"]["as"]+"\r",'utf-8'))
-                    tn.write(bytes("neighbor "+inter["address"]+" update-source loopback 0\r",'utf-8'))
-
-
 def clear_interface(tn):
     tn.write(b"no ip address \r")
     tn.write(b"shutdown\r")
