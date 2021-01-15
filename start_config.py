@@ -1,5 +1,6 @@
 import os
 import json
+from copy import deepcopy
 
 def get_values():
     nb_routers=int(input("\nHow many routers do you want ? :"))
@@ -77,16 +78,21 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
             
         }
         if i[:2] == "PE":
-            copy_list=list_PE
+            #print(list_PE)
+            copy_list=deepcopy(list_PE)
+            #print(copy_list)
             copy_list.remove(i)
+            #print(copy_list)
             dic_inter["bgp"]={
-                "as":as_nb
+                "as":as_nb,
+                "ibgp":copy_list
             }
-            dic_inter["ibgp"]=copy_list
+            #dic_inter["ibgp"]=copy_list
         port+=1
         ospf+=100
         min_label+=100
         max_label+=100
+        network_loopback+=1
 
         for j in liste_tuple:
             if j[0] == i: 
