@@ -57,16 +57,6 @@ def set_neighbor_loopback_address(hostname, tn):
                     tn.write(bytes("neighbor "+inter["address"]+" remote-as "+router["bgp"]["as"]+"\r",'utf-8'))
                     tn.write(bytes("neighbor "+inter["address"]+" update-source loopback 0\r",'utf-8'))
 
-def set_neighbor_loopback_address(hostname, tn):
-    global routers
-    for router in routers :
-        if router["name"] == hostname :
-            for inter in router["interfaces"]:
-                if inter["name"] == "Loopback0":
-                    tn.write(bytes("neighbor "+inter["address"]+" remote-as "+router["bgp"]["as"]+"\r",'utf-8'))
-                    tn.write(bytes("neighbor "+inter["address"]+" update-source loopback 0\r",'utf-8'))
-
-
 def clear_interface(tn):
     tn.write(b"no ip address \r")
     tn.write(b"shutdown\r")
@@ -210,6 +200,7 @@ def config_router(port, router):
         clear_bgp(tn)
         config_bgp(router, tn)
 
+
     # Config VRF
     if "vrf" in router:
         vrf_id = []
@@ -223,25 +214,76 @@ def config_router(port, router):
     print("Done for", router["name"])
 
 
-def config_vpc(port, vpc):
+def update_router(port, router, old_router):
+
     tn = telnetlib.Telnet("localhost", port)
-    tn.write(bytes("ip "+vpc["address"]+"/"+vpc["mask"]+" "+vpc["gateway"]+"\r",'utf-8'))
-    print("Done for", vpc["name"])
+    tn.write(b'\ren\r')
+    
+    tn.write(b'conf t\r')   
+    tn.write(bytes("hostname "+router["name"]+"\r",'utf-8'))
+
+    # Config interface
+    if router["interfaces"] !=  old_router["interfaces"] :
+        clear_interface(tn)
+        config_interfaces(router, tn)
+
+    # Config OSPF
+    if "ospf" in router and router["ospf"] !=  old_router["ospf"]  :
+        clear_ospf(tn)
+        config_ospf(router, tn)
+
+    # (conf) MPLS
+    if "mpls" in router and router["mpls"] !=  old_router["mpls"]  :
+        clear_mpls(tn)
+        config_mpls(router, tn)
+
+    # (conf) BGP
+    if "bgp" in router and router["bgp"] !=  old_router["bgp"]  :
+        clear_bgp(tn)
+        config_bgp(router, tn)
+
+    # Config VRF
+    if "vrf" in router and router["vrf"] !=  old_router["vrf"]  :
+        vrf_id = []
+        for v in router["vrf"]:
+            vrf_id.append(v["id"])
+        clear_vrf(tn, vrf_id)
+        config_vrf(router, tn)
+
+    tn.write(b"end\r")
+    tn.write(b'write\r')
+    print("Done for", router["name"])
+
+
+
+
+
+
 
 
 
 if __name__ == "__main__":
 
     config = 0
+    updated_routers = []
+
     with open('config.json','r') as f:
         config = json.load(f)
-    routers = config["routers"]
-    if len(sys.argv) <=1 : 
-        print("Missing arg !")
     
+    routers = config["routers"]
     for r in routers :
-        if sys.argv[1] == "all" :
-            config_router(r["port"], r)
-        
-        if sys.argv[1] == "update" :
-            config_router(r["port"], r)
+        config_router(r["port"], r)
+    
+    while True :
+        command =input("Entrez une commande\n")
+        if command == "update" :
+            with open('config.json','r') as f:
+                config = json.load(f)
+            updated_routers = config["routers"]
+            tu_routers = []
+            for r in routers :
+                for ur in updated_routers :
+                    if ur["name"] == r["name"] and ur != r :
+                        config_router(r["port"], r)
+        if command == "end" :
+            break
