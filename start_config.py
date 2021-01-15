@@ -11,7 +11,7 @@ def get_values():
     list_P=["P"+str(i) for i in range(1, nb_p + 1)]
     response=input("\nDo you want to fill in all the networks ? y/n : ")
     list_tuple=[]
-    if response == "y":
+    if response[0] == "y":
         while (True):
             print("Please enter the router couple and the network separate with ',' :\n")
             print("ex :  r1,r2,192.168.10.0\n")
@@ -57,12 +57,12 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
     liste_dico=[]
     for i in liste_complete:
         dic_inter={
-            "port":str(port)+'\n',
+            "port":str(port),
             "name":i,
             "mpls":{
-                "mtu":"1560"+'\n',
-                "min_label":str(min_label)+'\n',
-                "max_label":str(max_label)+'\n'
+                "mtu":"1560",
+                "min_label":str(min_label),
+                "max_label":str(max_label)
             },
             "ospf":{
                 "id":str(ospf),
