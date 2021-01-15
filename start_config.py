@@ -137,13 +137,13 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
             }
             dic_inter["interface"].append({
                 "name" : "GigabitEthernet2/0",
-                "address" : "194.10.2"+i[-1]+".0",
+                "address" : "194.10.2"+i[-1]+".1",
                 "mask" : "255.255.255.252",
                 "mpls" : False
             })
             dic_inter["interface"].append({
                 "name" : "FastEthernet0/0",
-                "address" : "194.20.2"+i[-1]+".0",
+                "address" : "194.20.2"+i[-1]+".1",
                 "mask" : "255.255.255.252",
                 "mpls" : False
             })

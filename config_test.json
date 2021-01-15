@@ -1,45 +1,172 @@
 {
-    "routers": 
-    [{"port": "5000", 
-        "name": "PE1", 
-        "mpls": {"mtu": 1560, "min_label": 100, "max_label": 199}, 
-        "ospf": {"id": "100", "area": "0"}, 
-        "interface": 
-            [{"name": "Loopback0", "address": "192.168.10.20","mask": "255.255.255.255"}, 
-            {"name": "GigabitEthernet1/0", "address": "172.26.22.1", "mask": "255.255.255.252", 
-            "mpls": true},
-            {
-                "name" : "GigabitEthernet2/0",
-                "address" : "194.20.21.1",
-                "mask" : "255.255.255.252",
-                "mpls" : false
-            }],
-            "bgp": {"as": 1, "ibgp":["PE2"]}}, 
-
-    {"port": "5001", 
-        "name": "PE2", 
-        "mpls": {"mtu": 1560, "min_label": 200, "max_label": 299}, 
-        "ospf": {"id": "200", "area": "0"}, 
-        "interface": [{"name": "Loopback0", "address": "192.168.10.21", "mask": "255.255.255.255"},
-            {"name": "GigabitEthernet1/0", "address": "172.26.21.1", "mask": "255.255.255.252", 
-            "mpls": true}], 
-            "bgp": {"as": 1, "ibgp": ["PE1"]}}, 
-            
-    {"port": "5002", 
-        "name": "P1", 
-        "mpls": {"mtu": 1560, "min_label": 300, "max_label": 399}, 
-        "ospf": {"id": "300", "area": "0"}, 
-        "interface": [{"name": "Loopback0", "address": "192.168.10.22", "mask": "255.255.255.255"}, 
-            {"name": "GigabitEthernet1/0", "address": "172.26.20.1", "mask": "255.255.255.252", 
-                "mpls": true}, 
-                {"name": "GigabitEthernet2/0", "address": "172.26.22.2", "mask": "255.255.255.252", 
-                    "mpls": true}]}, 
-                    
-    {"port": "5003", 
-        "name": "P2", 
-        "mpls": {"mtu": 1560, "min_label": 400, "max_label": 499}, 
-        "ospf": {"id": "400", "area": "0"}, 
-        "interface": [{"name": "Loopback0", "address": "192.168.10.23", "mask": "255.255.255.255"}, 
-            {"name": "GigabitEthernet1/0", "address": "172.26.20.2", "mask": "255.255.255.252", 
-                "mpls": true}, 
-                {"name": "GigabitEthernet2/0", "address": "172.26.21.2", "mask": "255.255.255.252", "mpls": true}]}]}
+  "routers": [
+    {
+      "port": "5000\n",
+      "name": "PE1",
+      "mpls": {
+        "mtu": "1560\n",
+        "min_label": "100\n",
+        "max_label": "199\n"
+      },
+      "ospf": {
+        "id": "100",
+        "area": "0"
+      },
+      "interface": [
+        {
+          "name": "Loopback0",
+          "address": "192.168.10.20",
+          "mask": "255.255.255.255"
+        },
+        {
+          "name": "GigabitEthernet1/0",
+          "address": "172.26.22.1",
+          "mask": "255.255.255.252",
+          "mpls": true
+        },
+        {
+          "name": "GigabitEthernet2/0",
+          "address": "194.10.21.1",
+          "mask": "255.255.255.252",
+          "mpls": false,
+          "avaible": "no"
+        },
+        {
+          "name": "FastEthernet0/0",
+          "address": "194.20.21.1",
+          "mask": "255.255.255.252",
+          "mpls": false,
+          "avaible": ""
+        }
+      ],
+      "bgp": {
+        "as": 1,
+        "ibgp": [
+          "PE2"
+        ]
+      },
+      "vrf": [
+        {
+          "id": "TC",
+          "interface": "GigabitEthernet2/0",
+          "rd": "3",
+          "ospf": "101"
+        },
+        {
+          "id": "IT",
+          "interface": "FastEthernet0/0",
+          "rd": "3",
+          "ospf": "102"
+        }
+      ]
+    },
+    {
+      "port": "5001\n",
+      "name": "PE2",
+      "mpls": {
+        "mtu": "1560\n",
+        "min_label": "200\n",
+        "max_label": "299\n"
+      },
+      "ospf": {
+        "id": "200",
+        "area": "0"
+      },
+      "interface": [
+        {
+          "name": "Loopback0",
+          "address": "192.168.10.21",
+          "mask": "255.255.255.255"
+        },
+        {
+          "name": "GigabitEthernet1/0",
+          "address": "172.26.21.1",
+          "mask": "255.255.255.252",
+          "mpls": true
+        },
+        {
+          "name": "GigabitEthernet2/0",
+          "address": "194.10.22.1",
+          "mask": "255.255.255.252",
+          "mpls": false
+        },
+        {
+          "name": "FastEthernet0/0",
+          "address": "194.20.22.1",
+          "mask": "255.255.255.252",
+          "mpls": false
+        }
+      ],
+      "bgp": {
+        "as": 1,
+        "ibgp": [
+          "PE1"
+        ]
+      }
+    },
+    {
+      "port": "5002\n",
+      "name": "P1",
+      "mpls": {
+        "mtu": "1560\n",
+        "min_label": "300\n",
+        "max_label": "399\n"
+      },
+      "ospf": {
+        "id": "300",
+        "area": "0"
+      },
+      "interface": [
+        {
+          "name": "Loopback0",
+          "address": "192.168.10.22",
+          "mask": "255.255.255.255"
+        },
+        {
+          "name": "GigabitEthernet1/0",
+          "address": "172.26.20.1",
+          "mask": "255.255.255.252",
+          "mpls": true
+        },
+        {
+          "name": "GigabitEthernet2/0",
+          "address": "172.26.22.2",
+          "mask": "255.255.255.252",
+          "mpls": true
+        }
+      ]
+    },
+    {
+      "port": "5003\n",
+      "name": "P2",
+      "mpls": {
+        "mtu": "1560\n",
+        "min_label": "400\n",
+        "max_label": "499\n"
+      },
+      "ospf": {
+        "id": "400",
+        "area": "0"
+      },
+      "interface": [
+        {
+          "name": "Loopback0",
+          "address": "192.168.10.23",
+          "mask": "255.255.255.255"
+        },
+        {
+          "name": "GigabitEthernet1/0",
+          "address": "172.26.20.2",
+          "mask": "255.255.255.252",
+          "mpls": true
+        },
+        {
+          "name": "GigabitEthernet2/0",
+          "address": "172.26.21.2",
+          "mask": "255.255.255.252",
+          "mpls": true
+        }
+      ]
+    }
+  ]
+}
