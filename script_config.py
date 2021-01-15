@@ -3,41 +3,6 @@ import telnetlib
 import sys
 import time
 
-def clean_router(port,router):
-    tn = telnetlib.Telnet("localhost", port)
-    tn.write(b'\ren\r')
-    tn.write(b'\rconf t\r')
-    for inter in router["interfaces"]:
-        tn.write(bytes("interface "+inter["name"]+"\r",'utf-8'))
-        tn.write(b"no ip address \r")
-        tn.write(b"shutdown\r")
-        tn.write(b"no mpls ip\r")
-        tn.write(b"no mpls mtu\r")
-        tn.write(b"exit\r")
-    
-    if "ospf" in router:
-        tn.write(bytes("no router ospf "+router["ospf"]["id"]+"\r",'utf-8'))
-        if "vrf" in router["ospf"]:
-            for key in router["ospf"]["vrf"].keys(): 
-                tn.write(bytes("no router ospf "+router["ospf"]["vrf"][key]+" vrf "+key+"\r",'utf-8'))
-    
-    if "vrf" in router:
-        for key in router["vrf"].keys(): 
-            tn.write(bytes("no ip vrf "+key+"\r",'utf-8'))
-            
-    tn.write(b"no mpls ldp router-id Loopback0\r")
-    tn.write(b"no mpls label range\r")
-   
-    if "bgp" in router :
-        tn.write(bytes("no router bgp "+router["bgp"]["as"]+"\r",'utf-8'))
-
-    tn.write(b"end\r")
-    tn.write(b"write\r")
-    
-    print("Clean for", router["name"], port)
-
-
-
 def find_newtwork(inter):
     cont=0
     addr=""
@@ -111,12 +76,11 @@ def clear_interface(tn):
 def config_interfaces(router, tn):
     for inter in router["interfaces"]:
         tn.write(bytes("interface "+inter["name"]+"\r",'utf-8'))
-        clear_interface(tn)
         tn.write(bytes("ip address "+inter["address"]+" "+inter["mask"]+"\r", "utf-8"))
         tn.write(b"no shutdown\r")
         if inter["name"] != "Loopback0" and inter["mpls"]:
             tn.write(b"mpls ip\r") 
-            tn.write(b"mpls mtu 1560\r")
+            tn.write(bytes("mpls mtu "+router["mpls"]["mtu"]+"\r", "utf-8"))
         tn.write(b"exit\r")
 
 def clear_mpls(tn):
@@ -124,7 +88,6 @@ def clear_mpls(tn):
     tn.write(b"no mpls label range\r")
 
 def config_mpls(router, tn):
-    clear_mpls(tn)
     mpls = router["mpls"]
     tn.write(b"ip cef\r")
     tn.write(b"mpls ldp router-id Loopback0\r")
@@ -139,7 +102,6 @@ def clear_bgp(tn):
         tn.write(bytes("no router bgp "+str(bgp_as)+"\r",'utf-8'))
 
 def config_bgp(router, tn):
-    clear_bgp(tn)
     bgp = router["bgp"]
     tn.write(bytes("router bgp "+bgp["as"]+"\r",'utf-8'))
     if "neighbor" in bgp:
@@ -155,7 +117,6 @@ def config_bgp(router, tn):
             set_neighbor_loopback_address(n, tn)
     tn.write(b"exit\r")
 
-
 def clear_ospf(tn):
     tn.write(b'do sh ip ospf summary-address\r')
     tn.read_until(b"sh ip ospf summary-address").decode('ascii')
@@ -167,7 +128,6 @@ def clear_ospf(tn):
                 tn.write(bytes("no router ospf "+res[i+1].split(",")[0]+"\r",'utf-8'))
 
 def config_ospf(router, tn):
-    clear_ospf(tn)
     ospf = router["ospf"]
     tn.write(bytes("router ospf "+ospf["id"]+"\r",'utf-8'))
     for inter in router["interfaces"]:
@@ -194,12 +154,7 @@ def clear_vrf(tn, vrf):
   
 
 def config_vrf(router, tn):
-    vrf_id = []
-    for v in router["vrf"]:
-        vrf_id.append(v["id"])
-    
-    clear_vrf(tn, vrf_id)
-    time.sleep(2)
+
     for vrf in router["vrf"]:
         interface = 0
         for inter in router["interfaces"]:
@@ -237,22 +192,30 @@ def config_router(port, router):
     tn.write(bytes("hostname "+router["name"]+"\r",'utf-8'))
 
     # Config interface
+    clear_interface(tn)
     config_interfaces(router, tn)
 
     # Config OSPF
     if "ospf" in router:
+        clear_ospf(tn)
         config_ospf(router, tn)
 
     # (conf) MPLS
     if "mpls" in router:
+        clear_mpls(tn)
         config_mpls(router, tn)
 
     # (conf) BGP
     if "bgp" in router:
+        clear_bgp(tn)
         config_bgp(router, tn)
 
     # Config VRF
     if "vrf" in router:
+        vrf_id = []
+        for v in router["vrf"]:
+            vrf_id.append(v["id"])
+        clear_vrf(tn, vrf_id)
         config_vrf(router, tn)
 
     tn.write(b"end\r")
@@ -273,11 +236,12 @@ if __name__ == "__main__":
     with open('config.json','r') as f:
         config = json.load(f)
     routers = config["routers"]
-    vpcs = config["vpcs"]
+    if len(sys.argv) <=1 : 
+        print("Missing arg !")
+    
     for r in routers :
-        if len(sys.argv) >1 and sys.argv[1] == "clean" :
-            clean_router(r["port"], r)
-        else :
+        if sys.argv[1] == "all" :
             config_router(r["port"], r)
-    for pc in vpcs :
-        config_vpc(pc["port"], pc)
+        
+        if sys.argv[1] == "update" :
+            config_router(r["port"], r)
