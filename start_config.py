@@ -57,12 +57,12 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
     liste_dico=[]
     for i in liste_complete:
         dic_inter={
-            "port":str(port)+'\n',
+            "port":str(port),
             "name":i,
             "mpls":{
-                "mtu":"1560"+'\n',
-                "min_label":str(min_label)+'\n',
-                "max_label":str(max_label)+'\n'
+                "mtu":"1560",
+                "min_label":str(min_label),
+                "max_label":str(max_label)
             },
             "ospf":{
                 "id":str(ospf),
