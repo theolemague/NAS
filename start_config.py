@@ -167,5 +167,5 @@ if __name__ == "__main__":
     my_dico = get_dictionnary(l1,l2,l3)
 
     with open("config_test.json","w") as f:
-        json.dump(my_dico,f)
+        json.dump(my_dico,f,indent=2)
 
