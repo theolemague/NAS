@@ -81,9 +81,7 @@ def Adding_client():
     with open('config_test.json','w') as f:
         json.dump(config,f,indent=2)
                     
-               
-                        
-        
+                       
     return (1)
 
 if __name__ == "__main__":
