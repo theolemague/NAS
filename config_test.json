@@ -36,7 +36,7 @@
           "address": "194.20.21.1",
           "mask": "255.255.255.252",
           "mpls": false,
-          "avaible": ""
+          "avaible": "no"
         }
       ],
       "bgp": {
@@ -57,6 +57,12 @@
           "interface": "FastEthernet0/0",
           "rd": "3",
           "ospf": "102"
+        },
+        {
+          "id": "Toto",
+          "interface": "FastEthernet0/0",
+          "rd": "3",
+          "ospf": "103"
         }
       ]
     },

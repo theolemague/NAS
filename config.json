@@ -28,13 +28,15 @@
           "name": "GigabitEthernet2/0",
           "address": "194.10.21.1",
           "mask": "255.255.255.252",
-          "mpls": false
+          "mpls": false,
+          "avaible": "no"
         },
         {
           "name": "FastEthernet0/0",
           "address": "194.20.21.1",
           "mask": "255.255.255.252",
-          "mpls": false
+          "mpls": false,
+          "avaible": ""
         }
       ],
       "bgp": {
@@ -42,7 +44,15 @@
         "ibgp": [
           "PE2"
         ]
-      }
+      },
+      "vrf": [
+        {
+          "id": "toto",
+          "interface": "GigabitEthernet2/0",
+          "rd": "3",
+          "ospf": "101"
+        }
+      ]
     },
     {
       "port": "5002",
