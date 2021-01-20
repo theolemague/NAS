@@ -29,14 +29,14 @@
           "address": "194.10.21.1",
           "mask": "255.255.255.252",
           "mpls": false,
-          "avaible": "no"
+          "available": false
         },
         {
           "name": "FastEthernet0/0",
           "address": "194.20.21.1",
           "mask": "255.255.255.252",
           "mpls": false,
-          "avaible": ""
+          "available": false
         }
       ],
       "bgp": {
@@ -47,10 +47,16 @@
       },
       "vrf": [
         {
-          "id": "toto",
+          "id": "2",
           "interface": "GigabitEthernet2/0",
           "rd": "3",
           "ospf": "101"
+        },
+        {
+          "id": "TC",
+          "interface": "FastEthernet0/0",
+          "rd": "3",
+          "ospf": "102"
         }
       ]
     },
