@@ -97,9 +97,9 @@ def Adding_client():
                                             for vrf in r["vrf"]:
                                                 max=0
                                                 if (vrf["id"] ==idc):
-                                                    rd=int(vrf["rd"])
+                                                    rd=int(vrf["rd"][0])
                                                 else:
-                                                    max=int(vrf["rd"])+1
+                                                    max=int(vrf["rd"][0])+1
                                                     rd = max
                                                     print(rd)
                                 vrfy={"id": idc,
