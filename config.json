@@ -28,13 +28,15 @@
           "name": "GigabitEthernet2/0",
           "address": "194.10.21.1",
           "mask": "255.255.255.252",
-          "mpls": false
+          "mpls": false,
+          "available": false
         },
         {
           "name": "FastEthernet0/0",
           "address": "194.20.21.1",
           "mask": "255.255.255.252",
-          "mpls": false
+          "mpls": false,
+          "available": false
         }
       ],
       "bgp": {
@@ -42,7 +44,21 @@
         "ibgp": [
           "PE2"
         ]
-      }
+      },
+      "vrf": [
+        {
+          "id": "TC",
+          "interface": "FastEthernet0/0",
+          "rd": "1",
+          "ospf": "101"
+        },
+        {
+          "id": "IT",
+          "interface": "GigabitEthernet2/0",
+          "rd": "2",
+          "ospf": "102"
+        }
+      ]
     },
     {
       "port": "",
@@ -72,13 +88,15 @@
           "name": "GigabitEthernet2/0",
           "address": "194.10.22.1",
           "mask": "255.255.255.252",
-          "mpls": false
+          "mpls": false,
+          "available": false
         },
         {
           "name": "FastEthernet0/0",
           "address": "194.20.22.1",
           "mask": "255.255.255.252",
-          "mpls": false
+          "mpls": false,
+          "available": false
         }
       ],
       "bgp": {
@@ -86,7 +104,21 @@
         "ibgp": [
           "PE1"
         ]
-      }
+      },
+      "vrf": [
+        {
+          "id": "TC",
+          "interface": "FastEthernet0/0",
+          "rd": "1",
+          "ospf": "201"
+        },
+        {
+          "id": "IT",
+          "interface": "GigabitEthernet2/0",
+          "rd": "2",
+          "ospf": "202"
+        }
+      ]
     },
     {
       "port": "",

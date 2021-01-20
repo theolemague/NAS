@@ -62,21 +62,22 @@ def Adding_client():
                                 print("Adding a VRF on interface ", inte["name"], "of the router", where)
                                 idc=input("Choose an id for the vrf :")
                                 ospfc=str(int(ospfc)+1)
-                                rd=0
+                                rd=1
                                 for r in config["routers"]:
-                                    if(r["name"]!=where):
+                                    if(r["name"]!=where ):
                                         if("vrf" in r):
                                             for vrf in r["vrf"]:
                                                 max=0
                                                 if (vrf["id"] ==idc):
+                                                    print(vrf["rd"], "Find out same id")
                                                     rd=int(vrf["rd"])
                                                 else:
                                                     max=int(vrf["rd"])+1
-                                        else:
-                                            rd=1
+                                                    rd = max
+                                                    print(rd)
                                 vrfy={"id": idc,
                                     "interface":"GigabitEthernet2/0",
-                                    "rd":"3",
+                                    "rd":str(rd)+":"+str(rd),
                                     "ospf":ospfc}
                                 vrfs.append(vrfy)
                                 config["routers"][c-1]["vrf"]=vrfs
@@ -89,7 +90,7 @@ def Adding_client():
                                 print("Adding a VRF on interface ", inte["name"], "of the router", where)
                                 idc=input("Choose an id for the vrf :")
                                 ospfc=str(int(ospfc)+1)
-                                rd=0
+                                rd=1
                                 for r in config["routers"]:
                                     if(r["name"]!=where):
                                         if("vrf" in r):
@@ -99,11 +100,11 @@ def Adding_client():
                                                     rd=int(vrf["rd"])
                                                 else:
                                                     max=int(vrf["rd"])+1
-                                        else:
-                                            rd=1
+                                                    rd = max
+                                                    print(rd)
                                 vrfy={"id": idc,
                                     "interface":"FastEthernet0/0",
-                                    "rd":str(rd),
+                                    "rd":str(rd)+":"+str(rd),
                                     "ospf":ospfc}
                                 vrfs.append(vrfy)
                                 config["routers"][c-1]["vrf"]=vrfs
