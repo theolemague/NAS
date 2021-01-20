@@ -39,18 +39,19 @@ def get_values():
         network_count +=1
 
     response=input("Is the typology right ? y/n : ")
-    if response[0] == "n":
-        while (True):
-            print("Please enter the router couple and the network separate with ',' :")
-            print("ex :  r1,r2,192.168.10.0")
-            print("all networks are /30")
-            print("type done when you're finished ")
-            reponse =input("Response : ")
-            if reponse == "done":
-                break
-            else :
-                reponse.split(",")
-                list_tuple.append(reponse)
+    if response:
+       if (response[0] == "n"):
+            while (True):
+                print("Please enter the router couple and the network separate with ',' :")
+                print("ex :  r1,r2,192.168.10.0")
+                print("all networks are /30")
+                print("type done when you're finished ")
+                reponse =input("Response : ")
+                if reponse == "done":
+                    break
+                else :
+                    reponse.split(",")
+                    list_tuple.append(reponse)
     return (list_tuple, list_P, list_PE)
 
 

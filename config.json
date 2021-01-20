@@ -28,15 +28,13 @@
           "name": "GigabitEthernet2/0",
           "address": "194.10.21.1",
           "mask": "255.255.255.252",
-          "mpls": false,
-          "available": false
+          "mpls": false
         },
         {
           "name": "FastEthernet0/0",
           "address": "194.20.21.1",
           "mask": "255.255.255.252",
-          "mpls": false,
-          "available": false
+          "mpls": false
         }
       ],
       "bgp": {
@@ -45,18 +43,14 @@
           "PE2"
         ]
       },
-      "vrf": [
+      "vrf" : [
         {
-          "id": "IT",
-          "interface": "GigabitEthernet2/0",
-          "rd": "2",
+          "interface" : "GigabitEthernet2/0",
+          "id":"TC",
+          "rd": "1:1",
+          "route-target import" : "100:100",
+          "route-target export" : "100:100",
           "ospf": "101"
-        },
-        {
-          "id": "TC",
-          "interface": "FastEthernet0/0",
-          "rd": "3",
-          "ospf": "102"
         }
       ]
     },
@@ -103,18 +97,14 @@
           "PE1"
         ]
       },
-      "vrf": [
+      "vrf" : [
         {
-          "id": "IT",
-          "interface": "GigabitEthernet2/0",
-          "rd": "2",
+          "interface" : "GigabitEthernet2/0",
+          "id":"TC",
+          "rd": "1:1",
+          "route-target import" : "200:100",
+          "route-target export" : "200:100",
           "ospf": "201"
-        },
-        {
-          "id": "TC",
-          "interface": "FastEthernet0/0",
-          "rd": "3",
-          "ospf": "202"
         }
       ]
     },

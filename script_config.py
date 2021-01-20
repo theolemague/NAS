@@ -56,8 +56,8 @@ def clear_interface(tn):
 
 def config_interfaces(router, tn):
     for inter in router["interface"]:
-        clear_interface(tn)
         tn.write(bytes("interface "+inter["name"]+"\r",'utf-8'))
+        clear_interface(tn)
         tn.write(bytes("ip address "+inter["address"]+" "+inter["mask"]+"\r", "utf-8"))
         tn.write(b"no shutdown\r")
         if inter["name"] != "Loopback0" and inter["mpls"]:
@@ -135,7 +135,7 @@ def config_ospf(router, tn): # TODO Change neighbor
     tn.write(b"exit\r")
 
 
-def clear_vrf(tn, vrf):
+def clear_vrf(tn):
     tn.write(b'do sh ip vrf detail\r')
     test = tn.read_until(b"sh ip vrf detail").decode('ascii')
     res = tn.read_until(b"#", 0.1).decode('ascii')
@@ -144,20 +144,20 @@ def clear_vrf(tn, vrf):
         for i in range(len(res)) :
             if '\nVRF' in res[i]:
                 vrf_used = res[i+1].split(";")[0]
-                if vrf_used not in vrf :
-                    tn.write(bytes("no ip vrf "+res[i+1].split(";")[0]+"\r",'utf-8'))
-  
-def find_vrf_pe(vrf, routers):
+                tn.write(bytes("no ip vrf "+res[i+1].split(";")[0]+"\r",'utf-8'))
+
+
+def find_vrf_pe(vrf, router, routers):
     neighor = []
     for r in routers :
-        if "PE" in r["name"] and "vrf" in r :
+        if "PE" in r["name"] and "vrf" in r and r != router :
             for v in r["vrf"]:
-                if r["vrf"]["rd"] == vrf["rd"]:
+                if v["rd"] == vrf["rd"] :
                     for inter in r["interface"]:
                         if inter["name"] == "Loopback0":
                             neighor.append(inter["address"])
                 
-    print(vrf, "les neigbohr:\n",neighor)
+    return neighor
 
 
 def config_vrf(router, routers, tn):
@@ -175,12 +175,12 @@ def config_vrf(router, routers, tn):
         tn.write(bytes("route-target import "+vrf["route-target import"]+"\r",'utf-8'))
         tn.write(b"exit\r")
         
-        #config interface
+        # config interface
         tn.write(bytes("interface "+interface["name"]+"\r",'utf-8'))
         tn.write(bytes("ip vrf forwarding "+vrf["id"]+"\r",'utf-8'))            
         tn.write(b"exit\r")
 
-        # config opsf TODO pareil entre rd et as
+        # config opsf
         if "ospf" in vrf :
             tn.write(bytes("router ospf "+vrf["ospf"]+" vrf "+vrf["id"]+"\r",'utf-8'))
             tn.write(bytes("redistribute bgp "+router["bgp"]["as"]+" subnets\r",'utf-8'))
@@ -188,9 +188,43 @@ def config_vrf(router, routers, tn):
             r_mask = inverse_Mask(interface)
             tn.write(bytes("network "+addr+" "+r_mask+" area "+router["ospf"]["area"]+"\r",'utf-8'))
             tn.write(b"exit\r")
+
+        # config bgp address family of neigbhor
+        tn.write(bytes("router bgp "+router["bgp"]["as"]+"\r", 'utf-8'))
+        tn.write(bytes("address-family vpnv4\r", 'utf-8'))
+        for n in find_vrf_pe(vrf,router, routers):
+            tn.write(bytes("neighbor "+n+" activate\r", 'utf-8'))
+            tn.write(bytes("neighbor "+n+" send-community extended\r", 'utf-8'))
+            tn.write(bytes("neighbor "+n+" next-hop-self\r", 'utf-8'))
+            tn.write(bytes("exit-address-family\r", 'utf-8'))
         
-        tn.write(bytes("router bgp "+router["bgp"]["as"], 'utf-8'))
-        tn.write(bytes("address-", 'utf-8'))
+        # config bgp address family of vrf
+        tn.write(bytes("address-family ipv4 vrf "+vrf["id"]+"\r", 'utf-8'))
+        for inter in router["interface"]:
+            if inter["name"] == vrf["interface"] :
+                # TODO Config le remote as de l'interface
+                tn.write(bytes("neighbor "+inter["address"]+" remotes-as\r", 'utf-8'))
+                tn.write(bytes("neighbor "+inter["address"]+" activate\r", 'utf-8'))
+                tn.write(bytes("neighbor "+inter["address"]+" send-community extended\r", 'utf-8'))
+                tn.write(bytes("neighbor "+inter["address"]+" next-hop-self\r", 'utf-8'))
+                tn.write(bytes("exit-address-family\r", 'utf-8'))
+
+
+            
+
+def clear_router(port, router):
+    tn = telnetlib.Telnet("localhost", port)
+    tn.write(b'\rend\r')
+    tn.write(b'\ren\r')
+    tn.write(b'conf t\r')   
+
+    clear_vrf(tn)
+    clear_ospf(tn)
+    clear_mpls(tn)
+    clear_bgp(tn)
+
+    tn.write(b'end\r')   
+    tn.write(b'write\r')   
 
 
 def config_router(port, router, routers):
@@ -201,33 +235,29 @@ def config_router(port, router, routers):
     
     tn.write(b'conf t\r')   
     tn.write(bytes("hostname "+router["name"]+"\r",'utf-8'))
+   
+    # (conf) MPLS
+    if "mpls" in router:
+        config_mpls(router, tn)
 
-  # Config VRF
+           
+    # Config VRF
     if "vrf" in router:
-        vrf_id = []
-        for v in router["vrf"]:
-            vrf_id.append(v["id"])
-        clear_vrf(tn, vrf_id)
         config_vrf(router, routers, tn)
-
 
     # Config interface
     config_interfaces(router, tn)
 
     # Config OSPF
     if "ospf" in router:
-        # clear_ospf(tn)
         config_ospf(router, tn)
 
-    # (conf) MPLS
-    if "mpls" in router:
-        clear_mpls(tn)
-        config_mpls(router, tn)
+
 
     # (conf) BGP
     if "bgp" in router:
-        clear_bgp(tn)
         config_bgp(router, routers, tn)
+ 
 
 
     tn.write(b"end\r")
@@ -293,11 +323,18 @@ if __name__ == "__main__":
         config = json.load(f)
     
     routers = config["routers"]
-    for r in routers :
-        config_router(r["port"], r, routers)
+
     
     while True :
         command =input("Entrez une commande\n")
+        if command == "clear":
+            for r in routers :
+                clear_router(r["port"], r)
+        
+        if command == "start":
+            for r in routers :
+                config_router(r["port"], r, routers)      
+        
         if command == "update" :
             with open('config.json','r') as f:
                 config = json.load(f)
