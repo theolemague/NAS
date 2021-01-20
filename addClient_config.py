@@ -54,7 +54,7 @@ def Adding_client():
                         a +=1
                     
                     inter=input(" Wich interface ? (long/short accepted) \n")
-                    if(inter=="Ge2/0" or inter == "GigabitEthernet2/0" or inter=="GE2/0"):
+                    if(inter[0]=="G" ):
                         for inte in interfaces:
                             if(inte["name"]=="GigabitEthernet2/0"):
                                 config["routers"][c-1]["interface"][2]["available"]=False
@@ -83,7 +83,7 @@ def Adding_client():
                                 config["routers"][c-1]["vrf"]=vrfs
                                 print("Created vrf ....\n",vrfy)
                     
-                    if(inter=="Fe0/0" or inter == "FastEthernet0/0"or inter=="FE0/0"):
+                    if(inter[0]=="F"):
                         for inte in interfaces:
                             if(inte["name"]=="FastEthernet0/0"):
                                 config["routers"][c-1]["interface"][3]["available"]=False

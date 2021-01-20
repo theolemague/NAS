@@ -13,9 +13,12 @@ def Adding_client():
 
     
     while(flag):
-        ans=input("Do you want to add a client router (CE) on your network ? y/n : ")
+        ans=input("Do you want to add a client router (CE) on your network ? y/n (default:yes) : ")
         
-        if(ans=="y"):
+        if ans:
+            if ans[0]=="n":
+                flag = 0
+        else:
             print(liste_PE)
             where=input("On which PE do you want to add a VRF ? :")
             available_int=[]
@@ -54,63 +57,74 @@ def Adding_client():
                         a +=1
                     
                     inter=input(" Wich interface ? (long/short accepted) \n")
-                    if(inter=="Ge2/0" or inter == "GigabitEthernet2/0" or inter=="GE2/0"):
+                    if(inter[0]=="G" ):
                         for inte in interfaces:
                             if(inte["name"]=="GigabitEthernet2/0"):
                                 config["routers"][c-1]["interface"][2]["available"]=False
-                                system('clear')
                                 print("Adding a VRF on interface ", inte["name"], "of the router", where)
                                 idc=input("Choose an id for the vrf :")
                                 ospfc=str(int(ospfc)+1)
-                                rd=0
+                                rd=1
+                                rt = 100
                                 for r in config["routers"]:
                                     if(r["name"]!=where):
                                         if("vrf" in r):
                                             for vrf in r["vrf"]:
-                                                max=0
+                                                max_rd=0
+                                                max_rt = 0
                                                 if (vrf["id"] ==idc):
                                                     rd=int(vrf["rd"])
+                                                    rt=int(vrf["route-target import"])
                                                 else:
-                                                    max=int(vrf["rd"])+1
-                                        else:
-                                            rd=1
+                                                    max_rd=int(vrf["rd"])+1
+                                                    max_rt = int(vrf["route-target import"])+100
+                                                    rd = max_rd
+                                                    rt = max_rt
+                                                    print(rd)
                                 vrfy={"id": idc,
-                                    "interface":"GigabitEthernet2/0",
-                                    "rd":"3",
+                                    "interface":"FastEthernet0/0",
+                                    "rd":str(rd)+":"+str(rd),
+                                    "route-target import": str(rt)+":"+str(rt),
+                                    "route-target export": str(rt)+":"+str(rt),
                                     "ospf":ospfc}
                                 vrfs.append(vrfy)
                                 config["routers"][c-1]["vrf"]=vrfs
                                 print("Created vrf ....\n",vrfy)
                     
-                    if(inter=="Fe0/0" or inter == "FastEthernet0/0"or inter=="FE0/0"):
+                    if(inter[0]=="F" ):
                         for inte in interfaces:
                             if(inte["name"]=="FastEthernet0/0"):
                                 config["routers"][c-1]["interface"][3]["available"]=False
                                 print("Adding a VRF on interface ", inte["name"], "of the router", where)
                                 idc=input("Choose an id for the vrf :")
                                 ospfc=str(int(ospfc)+1)
-                                rd=0
+                                rd=1
+                                rt = 100
                                 for r in config["routers"]:
                                     if(r["name"]!=where):
                                         if("vrf" in r):
                                             for vrf in r["vrf"]:
-                                                max=0
+                                                max_rd=0
+                                                max_rt = 0
                                                 if (vrf["id"] ==idc):
                                                     rd=int(vrf["rd"])
+                                                    rt=int(vrf["route-target import"])
                                                 else:
-                                                    max=int(vrf["rd"])+1
-                                        else:
-                                            rd=1
+                                                    max_rd=int(vrf["rd"])+1
+                                                    max_rt = int(vrf["route-target import"])+100
+                                                    rd = max_rd
+                                                    rt = max_rt
+                                                    print(rd)
                                 vrfy={"id": idc,
                                     "interface":"FastEthernet0/0",
-                                    "rd":str(rd),
+                                    "rd":str(rd)+":"+str(rd),
+                                    "route-target import": str(rt)+":"+str(rt),
+                                    "route-target export": str(rt)+":"+str(rt),
                                     "ospf":ospfc}
                                 vrfs.append(vrfy)
                                 config["routers"][c-1]["vrf"]=vrfs
                                 print("Created vrf ....\n",vrfy)
-
-        else:
-            flag=0                     
+                    
     with open('config.json','w') as f:
         json.dump(config,f,indent=2)
                     
