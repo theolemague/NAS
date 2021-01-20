@@ -13,12 +13,11 @@ def Adding_client():
 
     
     while(flag):
-        ans=input("Do you want to add a client router (CE) on your network ? y/n (default:yes) : ")
+        ans=input("add a client router (CE) on your network ? y/n (default:yes) : ")
         
-        if ans:
-            if ans[0]=="n":
-                flag = 0
-        else:
+        if ans=="":
+            ans="y"
+        if ans[0]=="y":
             print(liste_PE)
             where=input("On which PE do you want to add a VRF ? :")
             available_int=[]
@@ -73,11 +72,11 @@ def Adding_client():
                                                 max_rd=0
                                                 max_rt = 0
                                                 if (vrf["id"] ==idc):
-                                                    rd=int(vrf["rd"])
+                                                    rd=int(vrf["rd"][0])
                                                     rt=int(vrf["route-target import"])
                                                 else:
-                                                    max_rd=int(vrf["rd"])+1
-                                                    max_rt = int(vrf["route-target import"])+100
+                                                    max_rd=int(vrf["rd"][0])+1
+                                                    max_rt = int(vrf["route-target import"][0])+100
                                                     rd = max_rd
                                                     rt = max_rt
                                                     print(rd)
@@ -107,11 +106,11 @@ def Adding_client():
                                                 max_rd=0
                                                 max_rt = 0
                                                 if (vrf["id"] ==idc):
-                                                    rd=int(vrf["rd"])
+                                                    rd=int(vrf["rd"][0])
                                                     rt=int(vrf["route-target import"])
                                                 else:
-                                                    max_rd=int(vrf["rd"])+1
-                                                    max_rt = int(vrf["route-target import"])+100
+                                                    max_rd=int(vrf["rd"][0])+1
+                                                    max_rt = int(vrf["route-target import"][0])+100
                                                     rd = max_rd
                                                     rt = max_rt
                                                     print(rd)
@@ -124,6 +123,8 @@ def Adding_client():
                                 vrfs.append(vrfy)
                                 config["routers"][c-1]["vrf"]=vrfs
                                 print("Created vrf ....\n",vrfy)
+            else:
+                flag=0
                     
     with open('config.json','w') as f:
         json.dump(config,f,indent=2)
