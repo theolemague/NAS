@@ -47,9 +47,9 @@
       },
       "vrf": [
         {
-          "id": "2",
+          "id": "IT",
           "interface": "GigabitEthernet2/0",
-          "rd": "3",
+          "rd": "2",
           "ospf": "101"
         },
         {
@@ -102,7 +102,21 @@
         "ibgp": [
           "PE1"
         ]
-      }
+      },
+      "vrf": [
+        {
+          "id": "IT",
+          "interface": "GigabitEthernet2/0",
+          "rd": "2",
+          "ospf": "201"
+        },
+        {
+          "id": "TC",
+          "interface": "FastEthernet0/0",
+          "rd": "3",
+          "ospf": "202"
+        }
+      ]
     },
     {
       "port": "5003",

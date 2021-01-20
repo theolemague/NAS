@@ -56,6 +56,7 @@ def clear_interface(tn):
 
 def config_interfaces(router, tn):
     for inter in router["interface"]:
+        clear_interface(tn)
         tn.write(bytes("interface "+inter["name"]+"\r",'utf-8'))
         tn.write(bytes("ip address "+inter["address"]+" "+inter["mask"]+"\r", "utf-8"))
         tn.write(b"no shutdown\r")
@@ -146,8 +147,20 @@ def clear_vrf(tn, vrf):
                 if vrf_used not in vrf :
                     tn.write(bytes("no ip vrf "+res[i+1].split(";")[0]+"\r",'utf-8'))
   
+def find_vrf_pe(vrf, routers):
+    neighor = []
+    for r in routers :
+        if "PE" in r["name"] and "vrf" in r :
+            for v in r["vrf"]:
+                if r["vrf"]["rd"] == vrf["rd"]:
+                    for inter in r["interface"]:
+                        if inter["name"] == "Loopback0":
+                            neighor.append(inter["address"])
+                
+    print(vrf, "les neigbohr:\n",neighor)
 
-def config_vrf(router, tn):
+
+def config_vrf(router, routers, tn):
 
     for vrf in router["vrf"]:
         interface = 0
@@ -157,9 +170,9 @@ def config_vrf(router, tn):
         
         #create vrf TODO est ce que le rd c'est bien ca ou non je ne sais pas c'est la galère
         tn.write(bytes("ip vrf "+vrf["id"]+"\r",'utf-8'))
-        tn.write(bytes("rd "+vrf["rd"]+":100\r",'utf-8'))
-        tn.write(bytes("route-target export "+router["bgp"]["as"]+":100\r",'utf-8'))
-        tn.write(bytes("route-target import "+router["bgp"]["as"]+":100\r",'utf-8'))
+        tn.write(bytes("rd "+vrf["rd"]+"\r",'utf-8'))
+        tn.write(bytes("route-target export "+vrf["route-target export"]+"\r",'utf-8'))
+        tn.write(bytes("route-target import "+vrf["route-target import"]+"\r",'utf-8'))
         tn.write(b"exit\r")
         
         #config interface
@@ -175,6 +188,9 @@ def config_vrf(router, tn):
             r_mask = inverse_Mask(interface)
             tn.write(bytes("network "+addr+" "+r_mask+" area "+router["ospf"]["area"]+"\r",'utf-8'))
             tn.write(b"exit\r")
+        
+        tn.write(bytes("router bgp "+router["bgp"]["as"], 'utf-8'))
+        tn.write(bytes("address-", 'utf-8'))
 
 
 def config_router(port, router, routers):
@@ -186,13 +202,21 @@ def config_router(port, router, routers):
     tn.write(b'conf t\r')   
     tn.write(bytes("hostname "+router["name"]+"\r",'utf-8'))
 
+  # Config VRF
+    if "vrf" in router:
+        vrf_id = []
+        for v in router["vrf"]:
+            vrf_id.append(v["id"])
+        clear_vrf(tn, vrf_id)
+        config_vrf(router, routers, tn)
+
+
     # Config interface
-    clear_interface(tn)
     config_interfaces(router, tn)
 
     # Config OSPF
     if "ospf" in router:
-        clear_ospf(tn)
+        # clear_ospf(tn)
         config_ospf(router, tn)
 
     # (conf) MPLS
@@ -205,14 +229,6 @@ def config_router(port, router, routers):
         clear_bgp(tn)
         config_bgp(router, routers, tn)
 
-
-    # Config VRF
-    if "vrf" in router:
-        vrf_id = []
-        for v in router["vrf"]:
-            vrf_id.append(v["id"])
-        clear_vrf(tn, vrf_id)
-        config_vrf(router, tn)
 
     tn.write(b"end\r")
     tn.write(b'write\r')
@@ -254,7 +270,7 @@ def update_router(port, router, old_router, routers):
         for v in router["vrf"]:
             vrf_id.append(v["id"])
         clear_vrf(tn, vrf_id)
-        config_vrf(router, tn)
+        config_vrf(router, routers, tn)
 
     tn.write(b"end\r")
     tn.write(b'write\r')
