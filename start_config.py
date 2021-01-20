@@ -36,6 +36,7 @@ def get_values():
         inter=[list_PE[i],list_P[i],network+str(network_count)+".0"]
         print(inter)
         list_tuple.append(inter)
+        network_count +=1
 
     response=input("Is the typology right ? y/n : ")
     if response[0] == "n":
@@ -149,7 +150,7 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
                 "name" : "GigabitEthernet2/0",
                 "address" : "194.10.2"+i[-1]+".1",
                 "mask" : "255.255.255.252",
-                "mpls" : False
+                "mpls" : False,
             })
             dic_inter["interface"].append({
                 "name" : "FastEthernet0/0",
