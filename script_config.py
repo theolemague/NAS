@@ -297,7 +297,7 @@ def update_router(port, router, old_router, routers):
         vrf_id = []
         for v in router["vrf"]:
             vrf_id.append(v["id"])
-        clear_vrf(tn, vrf_id)
+        #clear_vrf(tn, vrf_id)
         config_vrf(router, routers, tn)
 
     tn.write(b"end\r")

@@ -54,6 +54,29 @@ def get_values():
                     list_tuple.append(reponse)
     return (list_tuple, list_P, list_PE)
 
+def parse_json():
+    with open('typo.json','r') as f:
+        config = json.load(f)
+
+    couples_config=[]
+    liste_P=[]
+    liste_PE=[]
+    for i in config:
+        liste_P.append(i)
+        #print(config[i])
+        for j in config[i]:
+            inter = [i,j["router"], j["network"], j["interface"]]
+            if (j["router"][:2]=="PE"):
+                liste_PE.append(j["router"])
+            #print(i[j])
+            couples_config.append(inter)
+    print(liste_PE)
+    print(liste_P)
+    print(couples_config)
+    return (couples_config, liste_P, liste_PE)
+
+      
+
 
 def get_dictionnary(liste_tuple, list_P, list_PE):
     liste_complete=[]
@@ -92,52 +115,24 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
 
         for j in liste_tuple:
             if j[0] == i: 
-
-                if(len(dic_inter["interface"])==1):
-                    dic_inter["interface"].append({
-                        "name" : "GigabitEthernet1/0",
-                        "address" : j[2][:-1]+str(1),
-                        "mask" : "255.255.255.252",
-                        "mpls" : True
-                    })
-                elif(len(dic_inter["interface"])==2):
-                    dic_inter["interface"].append({
-                        "name" : "GigabitEthernet2/0",
-                        "address" : j[2][:-1]+str(1),
-                        "mask" : "255.255.255.252",
-                        "mpls" : True
-                    })
-                elif(len(dic_inter["interface"])==3):
-                    dic_inter["interface"].append({
-                        "name" : "FastEthernet0/0",
-                        "address" : j[2][:-1]+str(1),
-                        "mask" : "255.255.255.252",
-                        "mpls" : True
-                    })
-            elif j[1] == i:
-                if(len(dic_inter["interface"])==1):
-                    dic_inter["interface"].append({
-                        "name" : "GigabitEthernet1/0",
-                        "address" : j[2][:-1]+str(2),
-                        "mask" : "255.255.255.252",
-                        "mpls" : True
-                    })
-                elif(len(dic_inter["interface"])==2):
-                    dic_inter["interface"].append({
-                        "name" : "GigabitEthernet2/0",
-                        "address" : j[2][:-1]+str(2),
-                        "mask" : "255.255.255.252",
-                        "mpls" : True
-                    })
-                elif(len(dic_inter["interface"])==3):
-                    dic_inter["interface"].append({
-                        "name" : "FastEthernet0/0",
-                        "address" : j[2][:-1]+str(2),
+                dic_inter["interface"].append({
+                        "name" : j[3],
+                        "address" : j[2][:-1]+(i[-1]),
                         "mask" : "255.255.255.252",
                         "mpls" : True
                     })
 
         if i[:2] == "PE":
+
+            for j in liste_tuple:
+                if j[1] == i:
+                    dic_inter["interface"].append({
+                        "name" : "GigabitEthernet1/0",
+                        "address" :  j[2][:-1]+str(int(i[-1])+1),
+                        "mask" : "255.255.255.252",
+                        "mpls" : True
+                    })
+
             #print(list_PE)
             copy_list=deepcopy(list_PE)
             #print(copy_list)
@@ -178,8 +173,11 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
     return dico
 
 if __name__ == "__main__":
-    l1,l2,l3 = get_values()
+    
+    l1,l2,l3 = parse_json()
     my_dico = get_dictionnary(l1,l2,l3)
-
+    
     with open("config.json","w") as f:
         json.dump(my_dico,f,indent=2)
+    
+    
