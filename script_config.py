@@ -203,14 +203,12 @@ def config_vrf(router, routers, tn):
         for inter in router["interface"]:
             if inter["name"] == vrf["interface"] :
                 # TODO Config le remote as de l'interface
-                tn.write(bytes("neighbor "+inter["address"]+" remotes-as\r", 'utf-8'))
+                tn.write(bytes("neighbor "+inter["address"]+" remote-as "+vrf["bgp"]+"\r", 'utf-8'))
                 tn.write(bytes("neighbor "+inter["address"]+" activate\r", 'utf-8'))
                 tn.write(bytes("neighbor "+inter["address"]+" send-community extended\r", 'utf-8'))
                 tn.write(bytes("neighbor "+inter["address"]+" next-hop-self\r", 'utf-8'))
                 tn.write(bytes("exit-address-family\r", 'utf-8'))
 
-
-            
 
 def clear_router(port, router):
     tn = telnetlib.Telnet("localhost", port)
@@ -309,41 +307,37 @@ def update_router(port, router, old_router, routers):
 
 
 
-
-
-
-
-
 if __name__ == "__main__":
 
     config = 0
     updated_routers = []
 
+    mode =  sys.argv[1]
+
     with open('config.json','r') as f:
         config = json.load(f)
     
     routers = config["routers"]
+    ports = config["port"]
 
     
-    while True :
-        command =input("Entrez une commande\n")
-        if command == "clear":
-            for r in routers :
-                clear_router(r["port"], r)
-        
-        if command == "start":
-            for r in routers :
-                config_router(r["port"], r, routers)      
-        
-        if command == "update" :
-            with open('config.json','r') as f:
-                config = json.load(f)
-            updated_routers = config["routers"]
-            tu_routers = []
-            for r in routers :
-                for ur in updated_routers :
-                    if ur["name"] == r["name"] and ur != r :
-                        update_router(ur["port"],ur, r, updated_routers)
-            routers = updated_routers
-        if command == "end" :
-            break
+    if mode == "clear":
+        for r in routers :
+            clear_router(ports[r["name"]], r)
+    
+    elif mode == "start":
+        for r in routers :
+            config_router(ports[r["name"]], r, routers)      
+    
+    elif mode == "update" :
+        with open('config.json','r') as f:
+            config = json.load(f)
+        updated_routers = config["routers"]
+        tu_routers = []
+        for r in routers :
+            for ur in updated_routers :
+                if ur["name"] == r["name"] and ur != r :
+                    update_router(ports[r["name"]],ur, r, updated_routers)
+        routers = updated_routers
+    else :
+        print("Command unfound")

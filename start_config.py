@@ -167,7 +167,14 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
      
         liste_dico.append(dic_inter)
 
+    ports = {}
+    for r in liste_dico:
+        ports[r["name"]] = ""
+
+    dico["port"]=ports
+
     dico["routers"]=liste_dico
+
     return dico
 
 if __name__ == "__main__":

@@ -1,137 +1,138 @@
 from os import system 
 import json
 
-def Adding_client():
-    with open('config.json','r') as f:
-        config = json.load(f)
-    flag=1
+
+def get_pe(config):
+    routers = config["routers"]
+    list_pe = []
+    for r in routers:
+        if "PE" in r["name"]:
+            list_pe.append(r)
+
+    print("Backbone PE are :")
+    names = []
+    pe = ""
+    for r in list_pe :
+        print(r["name"])
+        names.append(r["name"])
+    while True :
+        pe=input("On which PE do you want to add a client ? :")
+        if pe in names : 
+            break
+        else:
+            print("Error in the name of the selected pe") 
+    i_pe = 0
+    for i in range(len(routers)) :
+        if routers[i]["name"] == pe :
+            i_pe = i
+    return i_pe
+
+def get_interface(pe):
+    available_int = []
+    names = []
+    print("Interfaces available on the router", pe["name"])
+    for i in range(len(pe["interface"])):
+        interface = pe["interface"][i]
+        if interface["name"]!="Loopback0" and interface["name"]!="GigabitEthernet1/0":
+            if "available" in interface :
+                if interface["available"]:
+                    available_int.append(interface)
+                    names.append(interface["name"][0]+interface["name"][-3:])
+                    print("\t",interface["name"], "ip :", interface["address"])
+            else:
+                available_int.append(interface)
+                names.append(interface["name"][0]+interface["name"][-3:])
+                print("\t", interface["name"], "ip :", interface["address"])
+    
+    inter = ""
+    while True :
+        inter=input("Wich interface ? (long/short accepted) \n")
+        inter = inter[0]+inter[-3:] 
+        if inter in names :
+            break
+        else:
+            print("Error in the name of the selected interface") 
+    
+    i_int = 0
+    for i in range(len(pe["interface"])) :
+        name = pe["interface"][i]["name"]
+        if inter[0] == name[0] and inter[-3:] == name[-3:]:
+            i_int = i
+
+    return i_int
+
+
+def add_vrf(config, i_pe, i_int, ospf):
+    pe = config["routers"][i_pe]
+    interface = pe["interface"][i_int]
+    print("Adding a VRF on interface ", interface["name"])
+    vrf_id=input("Choose an id for the vrf :")
+    bgp_as=input("What is the bgp AS id ?")
+    rd = 1
+    rt = 100
+    for r in config["routers"]:
+        if r["name"]!=pe["name"]:
+            if "vrf" in r:
+                for vrf in r["vrf"]:
+                    max_rd=0
+                    max_rt = 0
+                    if vrf["id"] == vrf_id:
+                        rd=int(vrf["rd"].split(":")[0])
+                        rt=int(vrf["route-target import"].split(":")[0])
+                    else:
+                        max_rd=int(vrf["rd"].split(":")[0])+1
+                        max_rt = int(vrf["route-target import"].split(":")[0])+100
+                        rd = max_rd
+                        rt = max_rt
+                        print(rd)
+    vrf={
+        "id": vrf_id,
+        "interface":interface["name"],
+        "rd":str(rd)+":"+str(rd),
+        "route-target import": str(rt)+":"+str(rt),
+        "route-target export": str(rt)+":"+str(rt),
+        "ospf":ospf,
+        "bgp":bgp_as
+    }
+
+    config["routers"][i_pe]["vrf"].append(vrf)
+    print("VRF created")
+
+
+def add_client(config):
+
     liste_PE=[]
     routers = config["routers"]
-    for r in routers:
-        if (len(r["name"])==3):
-            liste_PE.append(r["name"])
-
-    
-    while(flag):
-        ans=input("add a client router (CE) on your network ? y/n (default:yes) : ")
+    i_pe = 0
+    i_int = 0
+    while True:
+        i_pe = get_pe(config)
+        pe = routers[i_pe]
         
-        if ans=="":
-            ans="y"
-        if ans[0]=="y":
-            print(liste_PE)
-            where=input("On which PE do you want to add a VRF ? :")
-            available_int=[]
-            ospfc=""
-            vrfs=[]
-            c=0
-            for r in config["routers"] :
-                c+=1
-                if(r["name"]==where):
-                    if("vrf" in r):
-                        vrft=r["vrf"]
-                        vrfs=vrft
-                        for vrf in vrft:
-                            ospfc=vrf["ospf"]
-                            print(ospfc)
-                    else:
-                        ospfc=r["ospf"]["id"]
-                        print(ospfc)
-                        vrfs=[]
-                        config["routers"][c-1]["vrf"]=vrfs
-                    interfaces=r["interface"]
-                    a=0
-                    print("Interfaces available on the router",where)
-                    for inte in interfaces:
-                        
-                        if inte["name"]!="Loopback0" and inte["name"]!="GigabitEthernet1/0":
-                            if "available" in inte:
-                                if inte["available"]:
-                                    available_int.append(inte)
-                                    print("\t",inte["name"], "ip :", inte["address"])
-                            else:
-                                config["routers"][c-1]["interface"][a]["available"]=True
-                                available_int.append(inte)
-                                print("\t", inte["name"], "ip :", inte["address"])
-                                
-                        a +=1
-                    
-                    inter=input(" Wich interface ? (long/short accepted) \n")
-                    if(inter[0]=="G" ):
-                        for inte in interfaces:
-                            if(inte["name"]=="GigabitEthernet2/0"):
-                                config["routers"][c-1]["interface"][2]["available"]=False
-                                print("Adding a VRF on interface ", inte["name"], "of the router", where)
-                                idc=input("Choose an id for the vrf :")
-                                ospfc=str(int(ospfc)+1)
-                                rd=1
-                                rt = 100
-                                for r in config["routers"]:
-                                    if(r["name"]!=where):
-                                        if("vrf" in r):
-                                            for vrf in r["vrf"]:
-                                                max_rd=0
-                                                max_rt = 0
-                                                if (vrf["id"] ==idc):
-                                                    rd=int(vrf["rd"][0])
-                                                    rt=int(vrf["route-target import"])
-                                                else:
-                                                    max_rd=int(vrf["rd"][0])+1
-                                                    max_rt = int(vrf["route-target import"][0])+100
-                                                    rd = max_rd
-                                                    rt = max_rt
-                                                    print(rd)
-                                vrfy={"id": idc,
-                                    "interface":"FastEthernet0/0",
-                                    "rd":str(rd)+":"+str(rd),
-                                    "route-target import": str(rt)+":"+str(rt),
-                                    "route-target export": str(rt)+":"+str(rt),
-                                    "ospf":ospfc}
-                                vrfs.append(vrfy)
-                                config["routers"][c-1]["vrf"]=vrfs
-                                print("Created vrf ....\n",vrfy)
-                    
-                    if(inter[0]=="F" ):
-                        for inte in interfaces:
-                            if(inte["name"]=="FastEthernet0/0"):
-                                config["routers"][c-1]["interface"][3]["available"]=False
-                                print("Adding a VRF on interface ", inte["name"], "of the router", where)
-                                idc=input("Choose an id for the vrf :")
-                                ospfc=str(int(ospfc)+1)
-                                rd=1
-                                rt = 100
-                                for r in config["routers"]:
-                                    if(r["name"]!=where):
-                                        if("vrf" in r):
-                                            for vrf in r["vrf"]:
-                                                max_rd=0
-                                                max_rt = 0
-                                                if (vrf["id"] ==idc):
-                                                    rd=int(vrf["rd"][0])
-                                                    rt=int(vrf["route-target import"])
-                                                else:
-                                                    max_rd=int(vrf["rd"][0])+1
-                                                    max_rt = int(vrf["route-target import"][0])+100
-                                                    rd = max_rd
-                                                    rt = max_rt
-                                                    print(rd)
-                                vrfy={"id": idc,
-                                    "interface":"FastEthernet0/0",
-                                    "rd":str(rd)+":"+str(rd),
-                                    "route-target import": str(rt)+":"+str(rt),
-                                    "route-target export": str(rt)+":"+str(rt),
-                                    "ospf":ospfc}
-                                vrfs.append(vrfy)
-                                config["routers"][c-1]["vrf"]=vrfs
-                                print("Created vrf ....\n",vrfy)
-            else:
-                flag=0
-                    
-    with open('config.json','w') as f:
-        json.dump(config,f,indent=2)
-                    
-                       
-    return (1)
+        opsf_count = "0"
+        if "vrf" in pe:
+            for vrf in pe["vrf"]:
+                if int(opsf_count) < int(vrf["ospf"]) :
+                    opsf_count=vrf["ospf"]
+        else:
+            opsf_count=pe["ospf"]["id"]
+            config["routers"][i_pe]["vrf"] = []
+        
+        i_int = get_interface(pe)
+
+        config["routers"][i_pe]["interface"][i_int]["available"]=False
+
+        add_vrf(config, i_pe, i_int,str(int(opsf_count)+1))
+    
+        ans=input("Do you want to add a client router (CE) on your network ? y/n (default:yes) : ")
+        if "n" in ans:
+            break 
+    return config
 
 if __name__ == "__main__":
-    
-    Adding_client()
+    with open('config.json','r') as f:
+        config = json.load(f)  
+    config = add_client(config)
+    with open('config.json','w') as f:
+        json.dump(config,f,indent=2)
+
