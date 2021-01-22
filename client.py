@@ -66,10 +66,14 @@ def add_vrf(config, i_pe, i_int, ospf):
     pe = config["routers"][i_pe]
     interface = pe["interface"][i_int]
     print("Adding a VRF on interface ", interface["name"])
+    addr=interface["address"].split(".")
+    addr[3]=str(int(addr[3])+1)
+    addr='.'.join(addr)
     vrf_id=input("Choose an id for the vrf :")
     bgp_as=input("What is the bgp AS id ?")
     rd = 1
     rt = 100
+    print("Your CE will have this IP address --> ",addr)
     for r in config["routers"]:
         if r["name"]!=pe["name"]:
             if "vrf" in r:
@@ -92,7 +96,8 @@ def add_vrf(config, i_pe, i_int, ospf):
         "route-target import": str(rt)+":"+str(rt),
         "route-target export": str(rt)+":"+str(rt),
         "ospf":ospf,
-        "bgp":bgp_as
+        "bgp":bgp_as,
+        "address":addr
     }
 
     config["routers"][i_pe]["vrf"].append(vrf)
