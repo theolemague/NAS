@@ -1,7 +1,7 @@
 {
   "routers": [
     {
-      "port": "5001",
+      "port": "",
       "name": "PE1",
       "mpls": {
         "mtu": "1560",
@@ -20,7 +20,7 @@
         },
         {
           "name": "GigabitEthernet1/0",
-          "address": "172.26.21.1",
+          "address": "172.26.22.1",
           "mask": "255.255.255.252",
           "mpls": true
         },
@@ -28,13 +28,15 @@
           "name": "GigabitEthernet2/0",
           "address": "194.10.21.1",
           "mask": "255.255.255.252",
-          "mpls": false
+          "mpls": false,
+          "available": false
         },
         {
           "name": "FastEthernet0/0",
           "address": "194.20.21.1",
           "mask": "255.255.255.252",
-          "mpls": false
+          "mpls": false,
+          "available": false
         }
       ],
       "bgp": {
@@ -43,19 +45,29 @@
           "PE2"
         ]
       },
-      "vrf" : [
+      "vrf": [
         {
-          "interface" : "GigabitEthernet2/0",
-          "id":"TC",
+          "id": "TC",
+          "interface": "FastEthernet0/0",
           "rd": "1:1",
-          "route-target import" : "100:100",
-          "route-target export" : "100:100",
-          "ospf": "101"
+          "route-target import": "100:100",
+          "route-target export": "100:100",
+          "ospf": "101",
+          "bgp": "3"
+        },
+        {
+          "id": "IT",
+          "interface": "FastEthernet0/0",
+          "rd": "2:2",
+          "route-target import": "200:200",
+          "route-target export": "200:200",
+          "ospf": "102",
+          "bgp": "5"
         }
       ]
     },
     {
-      "port": "5002",
+      "port": "",
       "name": "PE2",
       "mpls": {
         "mtu": "1560",
@@ -74,7 +86,7 @@
         },
         {
           "name": "GigabitEthernet1/0",
-          "address": "172.26.20.1",
+          "address": "172.26.21.1",
           "mask": "255.255.255.252",
           "mpls": true
         },
@@ -82,13 +94,15 @@
           "name": "GigabitEthernet2/0",
           "address": "194.10.22.1",
           "mask": "255.255.255.252",
-          "mpls": false
+          "mpls": false,
+          "available": false
         },
         {
           "name": "FastEthernet0/0",
           "address": "194.20.22.1",
           "mask": "255.255.255.252",
-          "mpls": false
+          "mpls": false,
+          "available": false
         }
       ],
       "bgp": {
@@ -97,19 +111,29 @@
           "PE1"
         ]
       },
-      "vrf" : [
+      "vrf": [
         {
-          "interface" : "GigabitEthernet2/0",
-          "id":"TC",
+          "id": "TC",
+          "interface": "FastEthernet0/0",
           "rd": "1:1",
-          "route-target import" : "200:100",
-          "route-target export" : "200:100",
-          "ospf": "201"
+          "route-target import": "100:100",
+          "route-target export": "100:100",
+          "ospf": "201",
+          "bgp": "3"
+        },
+        {
+          "id": "IT",
+          "interface": "FastEthernet0/0",
+          "rd": "2:2",
+          "route-target import": "200:200",
+          "route-target export": "200:200",
+          "ospf": "202",
+          "bgp": "6"
         }
       ]
     },
     {
-      "port": "5003",
+      "port": "",
       "name": "P1",
       "mpls": {
         "mtu": "1560",
@@ -124,6 +148,38 @@
         {
           "name": "Loopback0",
           "address": "192.168.10.22",
+          "mask": "255.255.255.255"
+        },
+        {
+          "name": "GigabitEthernet1/0",
+          "address": "172.26.20.1",
+          "mask": "255.255.255.252",
+          "mpls": true
+        },
+        {
+          "name": "GigabitEthernet2/0",
+          "address": "172.26.22.2",
+          "mask": "255.255.255.252",
+          "mpls": true
+        }
+      ]
+    },
+    {
+      "port": "",
+      "name": "P2",
+      "mpls": {
+        "mtu": "1560",
+        "min_label": "400",
+        "max_label": "499"
+      },
+      "ospf": {
+        "id": "400",
+        "area": "0"
+      },
+      "interface": [
+        {
+          "name": "Loopback0",
+          "address": "192.168.10.23",
           "mask": "255.255.255.255"
         },
         {

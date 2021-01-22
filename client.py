@@ -63,6 +63,7 @@ def Adding_client():
                                 print("Adding a VRF on interface ", inte["name"], "of the router", where)
                                 idc=input("Choose an id for the vrf :")
                                 ospfc=str(int(ospfc)+1)
+                                bgid=input("What is the bgp AS id ? :")
                                 rd=1
                                 rt = 100
                                 for r in config["routers"]:
@@ -73,10 +74,10 @@ def Adding_client():
                                                 max_rt = 0
                                                 if (vrf["id"] ==idc):
                                                     rd=int(vrf["rd"][0])
-                                                    rt=int(vrf["route-target import"])
+                                                    rt=int(vrf["route-target import"].split(":")[0])
                                                 else:
                                                     max_rd=int(vrf["rd"][0])+1
-                                                    max_rt = int(vrf["route-target import"][0])+100
+                                                    max_rt = int(vrf["route-target import"].split(":")[0])+100
                                                     rd = max_rd
                                                     rt = max_rt
                                                     print(rd)
@@ -85,7 +86,8 @@ def Adding_client():
                                     "rd":str(rd)+":"+str(rd),
                                     "route-target import": str(rt)+":"+str(rt),
                                     "route-target export": str(rt)+":"+str(rt),
-                                    "ospf":ospfc}
+                                    "ospf":ospfc,
+                                    "bgp":bgid}
                                 vrfs.append(vrfy)
                                 config["routers"][c-1]["vrf"]=vrfs
                                 print("Created vrf ....\n",vrfy)
@@ -97,6 +99,7 @@ def Adding_client():
                                 print("Adding a VRF on interface ", inte["name"], "of the router", where)
                                 idc=input("Choose an id for the vrf :")
                                 ospfc=str(int(ospfc)+1)
+                                bgid=input("What is the bgp AS id ? :")
                                 rd=1
                                 rt = 100
                                 for r in config["routers"]:
@@ -107,10 +110,10 @@ def Adding_client():
                                                 max_rt = 0
                                                 if (vrf["id"] ==idc):
                                                     rd=int(vrf["rd"][0])
-                                                    rt=int(vrf["route-target import"])
+                                                    rt=int(vrf["route-target import"].split(":")[0])
                                                 else:
                                                     max_rd=int(vrf["rd"][0])+1
-                                                    max_rt = int(vrf["route-target import"][0])+100
+                                                    max_rt = int(vrf["route-target import"].split(":")[0])+100
                                                     rd = max_rd
                                                     rt = max_rt
                                                     print(rd)
@@ -119,12 +122,13 @@ def Adding_client():
                                     "rd":str(rd)+":"+str(rd),
                                     "route-target import": str(rt)+":"+str(rt),
                                     "route-target export": str(rt)+":"+str(rt),
-                                    "ospf":ospfc}
+                                    "ospf":ospfc,
+                                    "bgp":bgid}
                                 vrfs.append(vrfy)
                                 config["routers"][c-1]["vrf"]=vrfs
                                 print("Created vrf ....\n",vrfy)
-            else:
-                flag=0
+        else:
+            flag=0
                     
     with open('config.json','w') as f:
         json.dump(config,f,indent=2)
