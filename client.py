@@ -66,25 +66,46 @@ def add_vrf(config, i_pe, i_int, ospf):
     pe = config["routers"][i_pe]
     interface = pe["interface"][i_int]
     print("Adding a VRF on interface ", interface["name"])
+    addr=interface["address"].split(".")
+    addr[3]=str(int(addr[3])+1)
+    addr='.'.join(addr)
+
+    
+    
     vrf_id=input("Choose an id for the vrf :")
     bgp_as=input("What is the bgp AS id ?")
+
     rd = 1
     rt = 100
+    print("Your CE will have this IP address --> ",addr)
+
+    neighbors=[]
+    if "neighbor" in pe["bgp"]:
+        neighbors=config["routers"][i_pe]["bgp"]["neighbor"]
+
+    else:
+        config["routers"][i_pe]["bgp"]["neighbor"]= neighbors
+    neighbor={
+        "address":addr,
+        "as":bgp_as}
+    config["routers"][i_pe]["bgp"]["neighbor"].append(neighbor)
+
     for r in config["routers"]:
-        if r["name"]!=pe["name"]:
-            if "vrf" in r:
-                for vrf in r["vrf"]:
-                    max_rd=0
-                    max_rt = 0
-                    if vrf["id"] == vrf_id:
-                        rd=int(vrf["rd"].split(":")[0])
-                        rt=int(vrf["route-target import"].split(":")[0])
-                    else:
-                        max_rd=int(vrf["rd"].split(":")[0])+1
-                        max_rt = int(vrf["route-target import"].split(":")[0])+100
-                        rd = max_rd
-                        rt = max_rt
-                        print(rd)
+        #if r["name"]!=pe["name"]:
+        if "vrf" in r:
+            for vrf in r["vrf"]:
+                max_rd=0
+                max_rt = 0
+                if vrf["id"] == vrf_id:
+                    rd=int(vrf["rd"].split(":")[0])
+                    rt=int(vrf["route-target import"].split(":")[0])
+                    break
+                else:
+                    max_rd=int(vrf["rd"].split(":")[0])+1
+                    max_rt = int(vrf["route-target import"].split(":")[0])+100
+                    rd = max_rd
+                    rt = max_rt
+                    print(rd)
     vrf={
         "id": vrf_id,
         "interface":interface["name"],
@@ -92,7 +113,8 @@ def add_vrf(config, i_pe, i_int, ospf):
         "route-target import": str(rt)+":"+str(rt),
         "route-target export": str(rt)+":"+str(rt),
         "ospf":ospf,
-        "bgp":bgp_as
+        "bgp":bgp_as,
+        "address":addr
     }
 
     config["routers"][i_pe]["vrf"].append(vrf)

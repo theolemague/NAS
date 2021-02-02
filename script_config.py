@@ -61,7 +61,7 @@ def config_interfaces(router, tn):
         tn.write(bytes("interface "+inter["name"]+"\r",'utf-8'))
         tn.write(bytes("ip address "+inter["address"]+" "+inter["mask"]+"\r", "utf-8"))
         tn.write(b"no shutdown\r")
-        if inter["name"] != "Loopback0" and inter["mpls"]:
+        if inter["name"] != "Loopback0" and "mpls" in inter and inter["mpls"]:
             tn.write(b"mpls ip\r") 
             tn.write(bytes("mpls mtu "+router["mpls"]["mtu"]+"\r", "utf-8"))
         tn.write(b"exit\r")
@@ -190,26 +190,27 @@ def config_vrf(router, routers, tn):
 
         # config bgp address family of neigbhor
         tn.write(bytes("router bgp "+router["bgp"]["as"]+"\r", 'utf-8'))
-        tn.write(bytes("address-family vpnv4\r", 'utf-8'))
-       
+        
+        # config vpn with PE
+        tn.write(bytes("address-family vpnv4\r", 'utf-8'))     
         for n in find_vrf_pe(vrf,router, routers):
+            tn.write(bytes("neighbor "+n+" remote-as "+router["bgp"]["as"]+"\r",'utf-8'))
             tn.write(bytes("neighbor "+n+" activate\r", 'utf-8'))
             tn.write(bytes("neighbor "+n+" send-community extended\r", 'utf-8'))
             tn.write(bytes("neighbor "+n+" next-hop-self\r", 'utf-8'))
-            tn.write(bytes("exit-address-family\r", 'utf-8'))
+        tn.write(bytes("exit-address-family\r", 'utf-8'))
         
         # config bgp address family of vrf
         tn.write(bytes("address-family ipv4 vrf "+vrf["id"]+"\r", 'utf-8'))
-        for inter in router["interface"]:
-            if inter["name"] == vrf["interface"] :
-                # TODO Config le remote as de l'interface
-
-                tn.write(bytes("redistribute ospf "+vrf["ospf"]+" vrf "+vrf["id"]+"\r", 'utf-8'))
-                tn.write(bytes("neighbor "+inter["address"]+" remote-as "+vrf["bgp"]+"\r", 'utf-8'))
-                tn.write(bytes("neighbor "+inter["address"]+" activate\r", 'utf-8'))
-                tn.write(bytes("neighbor "+inter["address"]+" send-community extended\r", 'utf-8'))
-                tn.write(bytes("neighbor "+inter["address"]+" next-hop-self\r", 'utf-8'))
-                tn.write(bytes("exit-address-family\r", 'utf-8'))
+        # for inter in router["interface"]:
+        #     if inter["name"] == vrf["interface"] :
+        tn.write(bytes("redistribute ospf "+vrf["ospf"]+" vrf "+vrf["id"]+"\r", 'utf-8'))
+                # tn.write(bytes("neighbor "+vrf["address"]+" remote-as "+vrf["bgp"]+"\r", 'utf-8'))
+                # tn.write(bytes("neighbor "+vrf["address"]+" activate\r", 'utf-8'))
+                # tn.write(bytes("neighbor "+vrf["address"]+" send-community extended\r", 'utf-8'))
+                # tn.write(bytes("neighbor "+vrf["address"]+" next-hop-self\r", 'utf-8'))
+        
+        tn.write(bytes("exit-address-family\r", 'utf-8'))
 
 
 def clear_router(port, router):
@@ -241,25 +242,22 @@ def config_router(port, router, routers):
     if "mpls" in router:
         config_mpls(router, tn)
 
-           
+
+
+    # Config OSPF
+    if "ospf" in router:
+        config_ospf(router, tn)
+
+    # (conf) BGP
+    if "bgp" in router:
+        config_bgp(router, routers, tn)
+ 
     # Config VRF
     if "vrf" in router:
         config_vrf(router, routers, tn)
 
     # Config interface
     config_interfaces(router, tn)
-
-    # Config OSPF
-    if "ospf" in router:
-        config_ospf(router, tn)
-
-
-
-    # (conf) BGP
-    if "bgp" in router:
-        config_bgp(router, routers, tn)
- 
-
 
     tn.write(b"end\r")
     # tn.write(b'write\r')
