@@ -46,7 +46,7 @@ def get_interface(pe):
     
     inter = ""
     while True :
-        inter=input("Wich interface ? (long/short accepted) \n")
+        inter=input("Wich interface ? (short not accepted) \n")
         inter = inter[0]+inter[-3:] 
         if inter in names :
             break
