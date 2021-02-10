@@ -2,7 +2,11 @@
   "port": {
     "PE1": "5001",
     "PE2": "5002",
-    "P1": "5000"
+    "P1": "5000",
+    "TC1": "5011",
+    "TC2": "5003",
+    "IT1": "5004",
+    "IT2": "5005"
   },
   "routers": [
     {
@@ -19,12 +23,12 @@
       "interface": [
         {
           "name": "Loopback0",
-          "address": "192.168.10.21",
+          "address": "192.168.10.20",
           "mask": "255.255.255.255"
         },
         {
           "name": "GigabitEthernet1/0",
-          "address": "172.26.21.1",
+          "address": "172.26.21.2",
           "mask": "255.255.255.252",
           "mpls": true
         },
@@ -39,19 +43,14 @@
           "name": "FastEthernet0/0",
           "address": "194.20.21.1",
           "mask": "255.255.255.252",
-          "mpls": false
+          "mpls": false,
+          "available": false
         }
       ],
       "bgp": {
         "as": "1",
         "ibgp": [
           "PE2"
-        ],
-        "aenleverneighbor": [
-          {
-            "address": "194.10.21.2",
-            "as": "2"
-          }
         ]
       },
       "vrf": [
@@ -59,20 +58,18 @@
           "id": "TC",
           "interface": "GigabitEthernet2/0",
           "rd": "1:1",
-          "route-target import": "1:1",
-          "route-target export": "1:1",
+          "route-target import": "100:100",
+          "route-target export": "100:100",
           "ospf": "101",
-          "bgp": "2",
           "address": "194.10.21.2"
         },
         {
           "id": "IT",
           "interface": "FastEthernet0/0",
           "rd": "2:2",
-          "route-target import": "2:2",
-          "route-target export": "2:2",
+          "route-target import": "200:200",
+          "route-target export": "200:200",
           "ospf": "102",
-          "bgp": "2",
           "address": "194.20.21.2"
         }
       ]
@@ -91,12 +88,12 @@
       "interface": [
         {
           "name": "Loopback0",
-          "address": "192.168.10.22",
+          "address": "192.168.10.21",
           "mask": "255.255.255.255"
         },
         {
           "name": "GigabitEthernet1/0",
-          "address": "172.26.22.1",
+          "address": "172.26.22.2",
           "mask": "255.255.255.252",
           "mpls": true
         },
@@ -111,19 +108,14 @@
           "name": "FastEthernet0/0",
           "address": "194.20.22.1",
           "mask": "255.255.255.252",
-          "mpls": false
+          "mpls": false,
+          "available": false
         }
       ],
       "bgp": {
         "as": "1",
         "ibgp": [
           "PE1"
-        ],
-        "aenleverneighbor": [
-          {
-            "address": "194.10.22.2",
-            "as": "3"
-          }
         ]
       },
       "vrf": [
@@ -131,20 +123,18 @@
           "id": "TC",
           "interface": "GigabitEthernet2/0",
           "rd": "1:1",
-          "route-target import": "1:1",
-          "route-target export": "1:1",
+          "route-target import": "100:100",
+          "route-target export": "100:100",
           "ospf": "201",
-          "bgp": "2",
           "address": "194.10.22.2"
         },
         {
           "id": "IT",
           "interface": "FastEthernet0/0",
           "rd": "2:2",
-          "route-target import": "2:2",
-          "route-target export": "2:2",
+          "route-target import": "200:200",
+          "route-target export": "200:200",
           "ospf": "202",
-          "bgp": "2",
           "address": "194.20.22.2"
         }
       ]
@@ -163,22 +153,98 @@
       "interface": [
         {
           "name": "Loopback0",
-          "address": "192.168.10.20",
+          "address": "192.168.10.22",
           "mask": "255.255.255.255"
         },
         {
           "name": "GigabitEthernet1/0",
-          "address": "172.26.21.2",
+          "address": "172.26.21.1",
           "mask": "255.255.255.252",
           "mpls": true
         },
         {
           "name": "GigabitEthernet2/0",
-          "address": "172.26.22.2",
+          "address": "172.26.22.1",
           "mask": "255.255.255.252",
           "mpls": true
         }
       ]
+    },
+    {
+      "name": "TC1",
+      "interface": [
+        {
+          "name": "GigabitEthernet1/0",
+          "address": "194.10.21.2",
+          "mask": "255.255.255.252"
+        },
+        {
+          "name": "GigabitEthernet2/0",
+          "address": "10.11.0.1",
+          "mask": "255.255.255.0"
+        }
+      ],
+      "ospf": {
+        "id": "11",
+        "area": "0"
+      }
+    },
+    {
+      "name": "TC2",
+      "interface": [
+        {
+          "name": "GigabitEthernet1/0",
+          "address": "194.10.22.2",
+          "mask": "255.255.255.252"
+        },
+        {
+          "name": "GigabitEthernet2/0",
+          "address": "10.12.0.1",
+          "mask": "255.255.255.0"
+        }
+      ],
+      "ospf": {
+        "id": "12",
+        "area": "0"
+      }
+    },
+    {
+      "name": "IT1",
+      "interface": [
+        {
+          "name": "GigabitEthernet1/0",
+          "address": "194.20.21.2",
+          "mask": "255.255.255.252"
+        },
+        {
+          "name": "GigabitEthernet2/0",
+          "address": "20.11.0.1",
+          "mask": "255.255.255.0"
+        }
+      ],
+      "ospf": {
+        "id": "21",
+        "area": "0"
+      }
+    },
+    {
+      "name": "IT2",
+      "interface": [
+        {
+          "name": "GigabitEthernet1/0",
+          "address": "194.20.22.2",
+          "mask": "255.255.255.252"
+        },
+        {
+          "name": "GigabitEthernet2/0",
+          "address": "20.12.0.1",
+          "mask": "255.255.255.0"
+        }
+      ],
+      "ospf": {
+        "id": "22",
+        "area": "0"
+      }
     }
   ]
 }

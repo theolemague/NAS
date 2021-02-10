@@ -16,7 +16,7 @@ def get_pe(config):
         print(r["name"])
         names.append(r["name"])
     while True :
-        pe=input("On which PE do you want to add a client ? :")
+        pe=input("Select the PE :")
         if pe in names : 
             break
         else:
@@ -46,7 +46,7 @@ def get_interface(pe):
     
     inter = ""
     while True :
-        inter=input("Wich interface ? (long/short accepted) \n")
+        inter=input("Select the interface (short not accepted) \n")
         inter = inter[0]+inter[-3:] 
         if inter in names :
             break
@@ -69,29 +69,24 @@ def add_vrf(config, i_pe, i_int, ospf):
     addr=interface["address"].split(".")
     addr[3]=str(int(addr[3])+1)
     addr='.'.join(addr)
-
-    
-    
-    vrf_id=input("Choose an id for the vrf :")
-    bgp_as=input("What is the bgp AS id ?")
+ 
+    vrf_id=input("Enter the vrf id :")
+    # bgp_as=input("Enter the bgp AS id :")
 
     rd = 1
     rt = 100
-    print("Your CE will have this IP address --> ",addr)
 
-    neighbors=[]
-    if "neighbor" in pe["bgp"]:
-        neighbors=config["routers"][i_pe]["bgp"]["neighbor"]
-
-    else:
-        config["routers"][i_pe]["bgp"]["neighbor"]= neighbors
-    neighbor={
-        "address":addr,
-        "as":bgp_as}
-    config["routers"][i_pe]["bgp"]["neighbor"].append(neighbor)
+    # neighbors=[]
+    # if "neighbor" in pe["bgp"]:
+    #     neighbors=config["routers"][i_pe]["bgp"]["neighbor"]
+    # else:
+    #     config["routers"][i_pe]["bgp"]["neighbor"]= neighbors
+    # neighbor={
+    #     "address":addr,
+    #     "as":bgp_as}
+    # config["routers"][i_pe]["bgp"]["neighbor"].append(neighbor)
 
     for r in config["routers"]:
-        #if r["name"]!=pe["name"]:
         if "vrf" in r:
             for vrf in r["vrf"]:
                 max_rd=0
@@ -113,17 +108,51 @@ def add_vrf(config, i_pe, i_int, ospf):
         "route-target import": str(rt)+":"+str(rt),
         "route-target export": str(rt)+":"+str(rt),
         "ospf":ospf,
-        "bgp":bgp_as,
+        # "bgp":bgp_as,
         "address":addr
     }
 
     config["routers"][i_pe]["vrf"].append(vrf)
     print("VRF created")
+    return addr
+
+def add_ce(config, addr):
+    res=input("Does the CE need to be configured ?(y/n) :")
+    if "n" in res :
+        return
+    
+    name=input("Enter the name of the CE : ")
+    addr_client=input("Enter the ip address of the client network <ip> <mask> : ")
+    ip_addr = addr_client.split(" ")[0]
+    mask_addr = addr_client.split(" ")[1]
+    ospf=input("Enter the ospf id :")
+    ce={
+        "name":name,
+        "interface":[
+            {
+                "name" : "GigabitEthernet1/0",
+                "address" : addr,
+                "mask" : "255.255.255.252"
+            },
+            {
+                "name" : "GigabitEthernet2/0",
+                "address" : ip_addr,
+                "mask" : mask_addr
+            }
+        ],
+        "ospf" : {
+            "id" : ospf,       
+            "area" : "0"
+        }
+    }
+
+    config["routers"].append(ce)
+    config["port"][name] = ""
+    
+
 
 
 def add_client(config):
-
-    liste_PE=[]
     routers = config["routers"]
     i_pe = 0
     i_int = 0
@@ -144,9 +173,10 @@ def add_client(config):
 
         config["routers"][i_pe]["interface"][i_int]["available"]=False
 
-        add_vrf(config, i_pe, i_int,str(int(opsf_count)+1))
+        ce_addr = add_vrf(config, i_pe, i_int,str(int(opsf_count)+1))
+        add_ce(config, ce_addr)
     
-        ans=input("Do you want to add a client router (CE) on your network ? y/n (default:yes) : ")
+        ans=input("Do you want to add another CE ? (y/n) : ")
         if "n" in ans:
             break 
     return config

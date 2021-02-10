@@ -203,10 +203,6 @@ def config_vrf(router, routers, tn):
         # for inter in router["interface"]:
         #     if inter["name"] == vrf["interface"] :
         tn.write(bytes("redistribute ospf "+vrf["ospf"]+" vrf "+vrf["id"]+"\r", 'utf-8'))
-                # tn.write(bytes("neighbor "+vrf["address"]+" remote-as "+vrf["bgp"]+"\r", 'utf-8'))
-                # tn.write(bytes("neighbor "+vrf["address"]+" activate\r", 'utf-8'))
-                # tn.write(bytes("neighbor "+vrf["address"]+" send-community extended\r", 'utf-8'))
-                # tn.write(bytes("neighbor "+vrf["address"]+" next-hop-self\r", 'utf-8'))
         
         tn.write(bytes("exit-address-family\r", 'utf-8'))
 
@@ -294,9 +290,6 @@ def update_router(port, router, routers):
     tn.write(b"end\r")
     tn.write(b'write\r')
     print("Done for", router["name"])
-
-
-
 
 if __name__ == "__main__":
 
