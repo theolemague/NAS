@@ -307,7 +307,6 @@ if __name__ == "__main__":
     if mode == "clear":
         for r in routers :
             clear_router(ports[r["name"]], r)
-    
     elif mode == "start":
         for r in routers :
             config_router(ports[r["name"]], r, routers)
