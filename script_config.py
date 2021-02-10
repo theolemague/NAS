@@ -172,11 +172,9 @@ def config_vrf(router, routers, tn):
         tn.write(bytes("rd "+vrf["rd"]+"\r",'utf-8'))
         tn.write(bytes("route-target export "+vrf["route-target export"]+"\r",'utf-8'))
         tn.write(bytes("route-target import "+vrf["route-target import"]+"\r",'utf-8'))
-        tn.write(b"exit\r")
-        
-        # config interface
         tn.write(bytes("interface "+interface["name"]+"\r",'utf-8'))
-        tn.write(bytes("ip vrf forwarding "+vrf["id"]+"\r",'utf-8'))            
+        tn.write(bytes("ip vrf forwarding "+vrf["id"]+"\r",'utf-8'))
+        tn.write(bytes("ip address "+interface["address"]+" "+interface["mask"]+"\r",'utf-8'))
         tn.write(b"exit\r")
 
         # config opsf
