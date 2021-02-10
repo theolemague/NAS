@@ -120,6 +120,7 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
                         "mask" : "255.255.255.252",
                         "mpls" : True
                     })
+                    
 
         if i[:2] == "PE":
 
@@ -127,10 +128,11 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
                 if j[1] == i:
                     dic_inter["interface"].append({
                         "name" : "GigabitEthernet1/0",
-                        "address" :  j[2][:-1]+str(int(i[-1])+1),
+                        "address" :  j[2][:-1]+str(2),
                         "mask" : "255.255.255.252",
                         "mpls" : True
                     })
+                    print("Coucou 2 -->",j[2][:-1]+str(2))
 
             #print(list_PE)
             copy_list=deepcopy(list_PE)
