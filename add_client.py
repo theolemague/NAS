@@ -100,7 +100,7 @@ def add_vrf(config, i_pe, i_int, ospf):
                     max_rt = int(vrf["route-target import"].split(":")[0])+100
                     rd = max_rd
                     rt = max_rt
-                    print(rd)
+
     vrf={
         "id": vrf_id,
         "interface":interface["name"],

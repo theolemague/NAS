@@ -34,7 +34,7 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
         dic_inter={
             "name":i,
             "mpls":{
-                "mtu":"1560",
+                "mtu":"1500",
                 "min_label":str(min_label),
                 "max_label":str(max_label)
             },
