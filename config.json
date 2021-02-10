@@ -2,18 +2,22 @@
   "port": {
     "PE1": "5000",
     "PE2": "5004",
-    "P1": "5001"
+    "P1": "5001",
+    "IT1":"5003",
+    "IT2":"5006",
+    "TC1":"5002",
+    "TC2":"5005"
   },
   "routers": [
     {
       "name": "PE1",
       "mpls": {
-        "mtu": "1500",
+        "mtu": "1560",
         "min_label": "100",
         "max_label": "199"
       },
       "ospf": {
-        "id": "100",
+        "id": "1000",
         "area": "0"
       },
       "interface": [
@@ -70,12 +74,12 @@
     {
       "name": "PE2",
       "mpls": {
-        "mtu": "1500",
+        "mtu": "1560",
         "min_label": "200",
         "max_label": "299"
       },
       "ospf": {
-        "id": "200",
+        "id": "2000",
         "area": "0"
       },
       "interface": [
@@ -132,12 +136,12 @@
     {
       "name": "P1",
       "mpls": {
-        "mtu": "1500",
+        "mtu": "1560",
         "min_label": "300",
         "max_label": "399"
       },
       "ospf": {
-        "id": "300",
+        "id": "3000",
         "area": "0"
       },
       "interface": [
@@ -157,6 +161,62 @@
           "address": "172.26.22.1",
           "mask": "255.255.255.252",
           "mpls": true
+        }
+      ]
+    },
+    {
+      "name": "TC1",
+      "ospf": {
+        "id": "1",
+        "area": "0"
+      },
+      "interface": [
+        {
+          "name": "GigabitEthernet1/0",
+          "address": "194.20.21.2",
+          "mask": "255.255.255.252"
+        }
+      ]
+  },
+  {
+      "name": "IT1",
+      "ospf": {
+        "id": "2",
+        "area": "0"
+      },
+      "interface": [
+        {
+          "name": "GigabitEthernet1/0",
+          "address": "194.10.21.2",
+          "mask": "255.255.255.252"
+        }
+      ]
+    },
+    {
+      "name": "TC2",
+      "ospf": {
+        "id": "3",
+        "area": "0"
+      },
+      "interface": [
+        {
+          "name": "GigabitEthernet1/0",
+          "address": "194.20.22.2",
+          "mask": "255.255.255.252"
+        }
+      ]
+    },
+    {
+      "name": "IT2",
+      "ospf": {
+        "id": "4",
+        "area": "0"
+      },
+      "interface": [
+        {
+          "name": "GigabitEthernet1/0",
+          "address": "194.10.22.2",
+          "mask": "255.255.255.252"
         }
       ]
     }

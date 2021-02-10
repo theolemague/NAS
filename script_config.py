@@ -64,7 +64,7 @@ def config_interfaces(router, tn):
         tn.write(b"no shutdown \r")
         if inter["name"] != "Loopback0" and "mpls" in inter and inter["mpls"]:
             tn.write(b"mpls ip \r") 
-            tn.write(bytes("mpls mtu "+router["mpls"]["mtu"]+" \r", "utf-8"))
+            tn.write(bytes("mpls mtu override "+router["mpls"]["mtu"]+" \r", "utf-8"))
         tn.write(b"exit\r")
 
 def clear_mpls(tn):
@@ -73,8 +73,8 @@ def clear_mpls(tn):
 
 def config_mpls(router, tn):
     mpls = router["mpls"]
-    tn.write(b"ip cef \r")
-    tn.write(b"mpls ldp router-id Loopback0 \r")
+    tn.write(b"ip cef\r")
+    tn.write(b"mpls ldp router-id Loopback0\r")
     if "min_label" in mpls:
         tn.write(bytes("mpls label range "+mpls["min_label"]+" "+mpls["max_label"]+" \r",'utf-8'))
 
@@ -83,7 +83,6 @@ def clear_bgp(tn):
     res = tn.read_until(b"local AS number", 0.1).decode('ascii')
     if "local AS number" in res :
         bgp_as = int(tn.read_until(b"\r").decode('ascii'))
-        print(bgp_as)
         tn.write(bytes("no router bgp "+str(bgp_as)+"\r",'utf-8'))
 
 def config_bgp(router, routers, tn):
@@ -101,14 +100,14 @@ def config_bgp(router, routers, tn):
                 if r["name"] == n :
                     for inter in r["interface"]:
                         if inter["name"] == "Loopback0":
-                            tn.write(bytes("neighbor "+inter["address"]+" remote-as "+r["bgp"]["as"]+" \r",'utf-8'))
-                            tn.write(bytes("neighbor "+inter["address"]+" update-source loopback 0 \r",'utf-8'))
+                            tn.write(bytes("neighbor "+inter["address"]+" remote-as "+r["bgp"]["as"]+"\r",'utf-8'))
+                            tn.write(bytes("neighbor "+inter["address"]+" update-source Loopback0\r",'utf-8'))
 
         tn.write(b"exit\r")
-        tn.write(bytes("router ospf "+router["ospf"]["id"]+" \r",'utf-8'))
+        tn.write(bytes("router ospf "+router["ospf"]["id"]+"\r",'utf-8'))
         for inter in router["interface"]:
             if inter["name"] == "Loopback0":
-                tn.write(bytes("network "+inter["address"]+" 0.0.0.0 area "+router["ospf"]["area"]+" \r",'utf-8'))
+                tn.write(bytes("network "+inter["address"]+" 0.0.0.0 area "+router["ospf"]["area"]+"\r",'utf-8'))
         
     tn.write(b"exit\r")
 
@@ -121,7 +120,6 @@ def clear_ospf(tn):
         for i in range(len(res)) :
             if res[i] == "(Process":
                 router_id = res[i+2].split(")")[0]
-                print(router_id)
                 tn.write(bytes("no router ospf "+router_id+" \r",'utf-8'))
 
 def config_ospf(router, tn): # TODO Change neighbor
@@ -174,10 +172,10 @@ def config_vrf(router, routers, tn):
         
         #create vrf TODO est ce que le rd c'est bien ca ou non je ne sais pas c'est la galère
         # tn.write(b"conf ter\r")
-        tn.write(bytes("ip vrf "+vrf["id"]+" \r",'utf-8'))
-        tn.write(bytes("rd "+vrf["rd"]+" \r",'utf-8'))
-        tn.write(bytes("route-target export "+vrf["route-target export"]+" \r",'utf-8'))
-        tn.write(bytes("route-target import "+vrf["route-target import"]+" \r",'utf-8'))
+        tn.write(bytes("ip vrf "+vrf["id"]+"\r",'utf-8'))
+        tn.write(bytes("rd "+vrf["rd"]+"\r",'utf-8'))
+        tn.write(bytes("route-target both "+vrf["route-target export"]+"\r",'utf-8'))
+        # tn.write(bytes("route-target import "+vrf["route-target import"]+"\r",'utf-8'))
         tn.write(b"exit\r")
         
         # config interface
@@ -230,8 +228,8 @@ def clear_router(port, router):
     clear_interface(router, tn)
     clear_vrf(tn)
     clear_ospf(tn)
-    clear_mpls(tn)
     clear_bgp(tn)
+    clear_mpls(tn)
 
     tn.write(b'end \r')   
     tn.write(b'write \r')   
@@ -250,22 +248,20 @@ def config_router(port, router, routers):
     # (conf) MPLS
     if "mpls" in router:
         config_mpls(router, tn)
-    
+    time.sleep(0.5)
     # Config OSPF
     if "ospf" in router:
         config_ospf(router, tn)
-        
-    
-
+    time.sleep(0.5)
     # (conf) BGP
     if "bgp" in router:
         config_bgp(router, routers, tn)
- 
+    time.sleep(0.5)
     # Config VRF
     if "vrf" in router:
         config_vrf(router, routers, tn)
 
-    
+    time.sleep(0.5)
     # Config interface
     config_interfaces(router, tn)
 
@@ -285,24 +281,26 @@ def update_router(port, router, routers):
 
     # Config interface
     clear_interface(router, tn)
+    time.sleep(0.5)
     config_interfaces(router, tn)
+    time.sleep(0.5)
 
     # Config OSPF
     if "ospf" in router :
         config_ospf(router, tn)
-
+    time.sleep(0.5)
     # (conf) MPLS
     if "mpls" in router :
         config_mpls(router, tn)
-
+    time.sleep(0.5)
     # (conf) BGP
     if "bgp" in router :
         config_bgp(router, routers, tn)
-
+    time.sleep(0.5)
     # Config VRF
     if "vrf" in router :
         config_vrf(router, routers, tn)
-
+    time.sleep(0.5)
     tn.write(b"end \r")
     tn.write(b'write \r')
     print("Done for", router["name"])
