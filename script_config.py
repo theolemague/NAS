@@ -83,7 +83,8 @@ def clear_bgp(tn):
     res = tn.read_until(b"local AS number", 0.1).decode('ascii')
     if "local AS number" in res :
         bgp_as = int(tn.read_until(b"\r").decode('ascii'))
-        tn.write(bytes("no router bgp "+str(bgp_as)+" \r",'utf-8'))
+        print(bgp_as)
+        tn.write(bytes("no router bgp "+str(bgp_as)+"\r",'utf-8'))
 
 def config_bgp(router, routers, tn):
     bgp = router["bgp"]
@@ -115,11 +116,13 @@ def clear_ospf(tn):
     tn.write(b'do sh ip ospf summary-address \r')
     tn.read_until(b"sh ip ospf summary-address").decode('ascii')
     res = tn.read_until(b"#", 0.1).decode('ascii')
-    if "Process" in res :
+    if "ID" in res :
         res = res.split(" ")
         for i in range(len(res)) :
-            if res[i] == "Process":
-                tn.write(bytes("no router ospf "+res[i+1].split(",")[0]+" \r",'utf-8'))
+            if res[i] == "(Process":
+                router_id = res[i+2].split(")")[0]
+                print(router_id)
+                tn.write(bytes("no router ospf "+router_id+" \r",'utf-8'))
 
 def config_ospf(router, tn): # TODO Change neighbor
     ospf = router["ospf"]
@@ -128,26 +131,23 @@ def config_ospf(router, tn): # TODO Change neighbor
         if inter["name"] != "Loopback0" :
             addr = find_newtwork(inter)
             r_mask = inverse_Mask(inter)
-            tn.write(bytes("network "+addr+" "+r_mask+" area "+ospf["area"]+" \r",'utf-8'))
+            tn.write(bytes("network "+addr+" "+r_mask+" area "+ospf["area"]+"\r",'utf-8'))
             if "PE" in router["name"] and inter["name"] != "GigabitEthernet1/0":
                 name = inter["name"].split("Ethernet")
-                tn.write(bytes("passive-interface "+name[0]+"Ethernet "+name[1]+" \r",'utf-8'))
+                tn.write(bytes("passive-interface "+name[0]+"Ethernet "+name[1]+"\r",'utf-8'))
     tn.write(b"exit\r")
 
 
 def clear_vrf(tn):
     tn.write(b'do sh ip vrf detail \r')
-    test = tn.read_until(b"sh ip vrf detail").decode('ascii')
-    # print(test)
+    tn.read_until(b"sh ip vrf detail").decode('ascii')
     res = tn.read_until(b"#", 0.1).decode('ascii')
     if "VRF" in res :
         res = res.split(" ")
-        for i in range(len(res)) :
+        for i in range(len(res)):
             if '\nVRF' in res[i]:
                 vrf_used = res[i+1].split(";")[0]
                 vrf_name = vrf_used.partition('\n')[0]
-                print(vrf_name)
-                tn.write(b"exit\r")
                 tn.write(bytes("no ip vrf "+vrf_name+" \r",'utf-8'))
 
 
@@ -189,21 +189,21 @@ def config_vrf(router, routers, tn):
 
         # config opsf
         if "ospf" in vrf :
-            tn.write(bytes("router ospf "+vrf["ospf"]+" vrf "+vrf["id"]+" \r",'utf-8'))
-            tn.write(bytes("redistribute bgp "+router["bgp"]["as"]+" subnets \r",'utf-8'))
+            tn.write(bytes("router ospf "+vrf["ospf"]+" vrf "+vrf["id"]+"\r",'utf-8'))
+            tn.write(bytes("redistribute bgp "+router["bgp"]["as"]+" subnets"+"\r",'utf-8'))
             addr = find_newtwork(interface)
             r_mask = inverse_Mask(interface)
-            tn.write(bytes("network "+addr+" "+r_mask+" area "+router["ospf"]["area"]+" \r",'utf-8'))
+            tn.write(bytes("network "+addr+" "+r_mask+" area "+router["ospf"]["area"]+"\r",'utf-8'))
             tn.write(b"exit\r")
 
         # config bgp address family of neigbhor
         tn.write(bytes("router bgp "+router["bgp"]["as"]+" \r", 'utf-8'))
         
         # config vpn with PE
-        tn.write(bytes("address-family vpnv4 \r", 'utf-8'))     
+        tn.write(bytes("address-family vpnv4\r", 'utf-8'))     
         for n in find_vrf_pe(vrf,router, routers):
             tn.write(bytes("neighbor "+n+" remote-as "+router["bgp"]["as"]+" \r",'utf-8'))
-            tn.write(bytes("neighbor "+n+" activate \r", 'utf-8'))
+            tn.write(bytes("neighbor "+n+" activate"+"\r", 'utf-8'))
             tn.write(bytes("neighbor "+n+" send-community extended \r", 'utf-8'))
             tn.write(bytes("neighbor "+n+" next-hop-self \r", 'utf-8'))
         # tn.write(bytes("exit-address-family \r", 'utf-8'))
@@ -246,11 +246,16 @@ def config_router(port, router, routers):
     tn.write(b'conf t \r')   
     tn.write(bytes("hostname "+router["name"]+" \r",'utf-8'))
 
-
-
+    
+    # (conf) MPLS
+    if "mpls" in router:
+        config_mpls(router, tn)
+    
     # Config OSPF
     if "ospf" in router:
         config_ospf(router, tn)
+        
+    
 
     # (conf) BGP
     if "bgp" in router:
@@ -260,10 +265,7 @@ def config_router(port, router, routers):
     if "vrf" in router:
         config_vrf(router, routers, tn)
 
-    # (conf) MPLS
-    if "mpls" in router:
-        config_mpls(router, tn)
-
+    
     # Config interface
     config_interfaces(router, tn)
 

@@ -8,7 +8,7 @@
     {
       "name": "PE1",
       "mpls": {
-        "mtu": "1560",
+        "mtu": "1500",
         "min_label": "100",
         "max_label": "199"
       },
@@ -70,7 +70,7 @@
     {
       "name": "PE2",
       "mpls": {
-        "mtu": "1560",
+        "mtu": "1500",
         "min_label": "200",
         "max_label": "299"
       },
@@ -132,7 +132,7 @@
     {
       "name": "P1",
       "mpls": {
-        "mtu": "1560",
+        "mtu": "1500",
         "min_label": "300",
         "max_label": "399"
       },

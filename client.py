@@ -123,7 +123,7 @@ def add_vrf(config, i_pe, i_int, ospf):
 
 def add_client(config):
 
-    liste_PE=[]
+    
     routers = config["routers"]
     i_pe = 0
     i_int = 0
