@@ -127,7 +127,7 @@ if __name__ == "__main__":
     l1,l2,l3 = parse_json()
     my_dico = get_dictionnary(l1,l2,l3)
     
-    with open("config_t.json","w") as f:
+    with open("config.json","w") as f:
         json.dump(my_dico,f,indent=2)
     
     

@@ -9,6 +9,11 @@
             "router":"PE2",
             "network":"172.26.22.0",
             "interface":"GigabitEthernet2/0"
+        },
+        {
+            "router":"PE3",
+            "network":"172.26.23.0",
+            "interface":"FastEthernet0/0"
         }
     ]
 }
