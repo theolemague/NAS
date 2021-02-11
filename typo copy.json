@@ -1,0 +1,14 @@
+{
+    "P1":[
+        {
+            "router":"PE1",
+            "network":"172.26.21.0",
+            "interface":"GigabitEthernet1/0"
+        },
+        {
+            "router":"PE2",
+            "network":"172.26.22.0",
+            "interface":"GigabitEthernet2/0"
+        }
+    ]
+}

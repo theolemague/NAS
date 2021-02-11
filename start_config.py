@@ -3,7 +3,7 @@ import json
 from copy import deepcopy
 
 def parse_json():
-    with open('typo.json','r') as f:
+    with open('typo copy.json','r') as f:
         config = json.load(f)
 
     couples_config=[]
