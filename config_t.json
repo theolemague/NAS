@@ -24,7 +24,7 @@
         },
         {
           "name": "GigabitEthernet1/0",
-          "address": "172.26.21.2",
+          "address": "172.26.21.1",
           "mask": "255.255.255.252",
           "mpls": true
         },
@@ -67,7 +67,7 @@
         },
         {
           "name": "GigabitEthernet1/0",
-          "address": "172.26.22.2",
+          "address": "172.26.22.1",
           "mask": "255.255.255.252",
           "mpls": true
         },
@@ -110,13 +110,13 @@
         },
         {
           "name": "GigabitEthernet1/0",
-          "address": "172.26.21.1",
+          "address": "172.26.21.2",
           "mask": "255.255.255.252",
           "mpls": true
         },
         {
           "name": "GigabitEthernet2/0",
-          "address": "172.26.22.1",
+          "address": "172.26.22.2",
           "mask": "255.255.255.252",
           "mpls": true
         }
