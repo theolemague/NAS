@@ -62,7 +62,7 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
                             "mpls" : True
                         })
                 else:
-                    if j[0][-1]%2==0:
+                    if int(j[0][-1])%2==0:
                         a=2
                     else:
                         a=1
