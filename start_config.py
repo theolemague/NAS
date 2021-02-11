@@ -54,13 +54,26 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
 
         for j in liste_tuple:
             if j[0] == i: 
-                dic_inter["interface"].append({
-                        "name" : j[3],
-                        "address" : j[2][:-1]+(i[-1]),
-                        "mask" : "255.255.255.252",
-                        "mpls" : True
-                    })
+                if j[1][:2]=="PE":
+                    dic_inter["interface"].append({
+                            "name" : j[3],
+                            "address" : j[2][:-1]+str(2),
+                            "mask" : "255.255.255.252",
+                            "mpls" : True
+                        })
+                else:
+                    if j[0][-1]%2==0:
+                        a=2
+                    else:
+                        a=1
                     
+                    dic_inter["interface"].append({
+                            "name" : j[3],
+                            "address" : j[2][:-1]+str(a),
+                            "mask" : "255.255.255.252",
+                            "mpls" : True
+                        })
+                
 
         if i[:2] == "PE":
 
@@ -68,7 +81,7 @@ def get_dictionnary(liste_tuple, list_P, list_PE):
                 if j[1] == i:
                     dic_inter["interface"].append({
                         "name" : "GigabitEthernet1/0",
-                        "address" :  j[2][:-1]+str(2),
+                        "address" :  j[2][:-1]+str(1),
                         "mask" : "255.255.255.252",
                         "mpls" : True
                     })
@@ -114,7 +127,7 @@ if __name__ == "__main__":
     l1,l2,l3 = parse_json()
     my_dico = get_dictionnary(l1,l2,l3)
     
-    with open("config.json","w") as f:
+    with open("config_t.json","w") as f:
         json.dump(my_dico,f,indent=2)
     
     
